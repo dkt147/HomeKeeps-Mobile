@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "24392194242",
+    "project_id": "habit-breaker-v5dp49",
+    "storage_bucket": "habit-breaker-v5dp49.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24392194242:android:871f4b6577a7e33cbc435b",
+        "android_client_info": {
+          "package_name": "com.homekeeps.customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxfsltqU0cLGp_JHp8bWUq6VzyYeKhSXY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
