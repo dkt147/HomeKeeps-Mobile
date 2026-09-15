@@ -402,33 +402,33 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                           bg: Theme.of(context).scaffoldBackgroundColor,
                           textcolor: Theme.of(context).colorScheme.primary,
                           onTap: () {
-                            Get.to(
-                              () => ExtendedWarrantyOfferScreen(
-                                applianceName: widget.applianceName,
-                                headline:
-                                    'Three more years of repairs, after initial warranty ends',
-                                price: '₪690',
-                                priceNote: 'once · covers 36 months',
-                                covered: const [
-                                  'Mechanical and electrical breakdown',
-                                  'Technician call-out, labour and parts',
-                                  'Unlimited number of visits',
-                                  "Replacement if it can't be repaired",
-                                ],
-                                notCovered: const [
-                                  'Accidental damage, misuse and cosmetic wear',
-                                  'Faults that already exist today',
-                                  'Consumables: filters, seals, hoses',
-                                  'Commercial or business use',
-                                ],
-                                coverBegins: widget.warrantyEndDate,
-                                waitingPeriod: '30 days from purchase',
-                                yourSharePerClaim: '₪0',
-                                claimLimit: '₪2,790',
-                                term: '36 months',
-                              ),
-                              transition: Transition.rightToLeft,
-                            );
+                            // Get.to(
+                            //   () => ExtendedWarrantyOfferScreen(
+                            //     applianceName: widget.applianceName,
+                            //     headline:
+                            //         'Three more years of repairs, after initial warranty ends',
+                            //     price: '₪690',
+                            //     priceNote: 'once · covers 36 months',
+                            //     covered: const [
+                            //       'Mechanical and electrical breakdown',
+                            //       'Technician call-out, labour and parts',
+                            //       'Unlimited number of visits',
+                            //       "Replacement if it can't be repaired",
+                            //     ],
+                            //     notCovered: const [
+                            //       'Accidental damage, misuse and cosmetic wear',
+                            //       'Faults that already exist today',
+                            //       'Consumables: filters, seals, hoses',
+                            //       'Commercial or business use',
+                            //     ],
+                            //     coverBegins: widget.warrantyEndDate,
+                            //     waitingPeriod: '30 days from purchase',
+                            //     yourSharePerClaim: '₪0',
+                            //     claimLimit: '₪2,790',
+                            //     term: '36 months',
+                            //   ),
+                            //   transition: Transition.rightToLeft,
+                            // );
                           },
                           title: 'Extend the protection',
                           width: 220.w,

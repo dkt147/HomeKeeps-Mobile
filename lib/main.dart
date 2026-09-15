@@ -6,7 +6,7 @@ import 'package:home_keeps/controller/language_controller.dart';
 import 'package:home_keeps/resources/local_storage.dart';
 import 'package:home_keeps/services/theme_service.dart';
 import 'package:home_keeps/views/auth/home_wallet_screen.dart';
-import 'package:home_keeps/views/auth/splash_screen.dart';
+
 import 'package:home_keeps/views/translations/app_translations.dart';
 
 void main() async {
