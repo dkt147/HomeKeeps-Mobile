@@ -3,18 +3,47 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:home_keeps/constants/app_assets.dart';
 import 'package:home_keeps/constants/text_styles.dart';
-import 'package:home_keeps/views/documents/closing_onsite_screen.dart';
-import 'package:home_keeps/views/documents/read_receipt_screen.dart';
+import 'package:home_keeps/controller/auth_controller.dart';
 import 'package:home_keeps/views/home/add_appliance_screen.dart';
 import 'package:home_keeps/views/home/appliances_detail_screen.dart';
-import 'package:home_keeps/views/home/extended_cover_screen.dart';
-import 'package:home_keeps/views/home/out_of_cover_screen.dart';
-import 'package:home_keeps/views/home/suggest_item_screen.dart';
-import 'package:home_keeps/views/home/warranty_offer_screen.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
-class HomeDashboardScreen extends StatelessWidget {
+class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
+
+  @override
+  State<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
+}
+
+class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
+  late final AuthController controller;
+  @override
+  void initState() {
+    super.initState();
+    try {
+      controller = Get.find<AuthController>();
+    } catch (e) {
+      controller = Get.put(AuthController());
+    }
+
+    if (controller.profile == null) {
+      controller.fetchProfile();
+    }
+  }
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return 'GOOD MORNING';
+    if (hour >= 12 && hour < 17) return 'GOOD AFTERNOON';
+    if (hour >= 17 && hour < 21) return 'GOOD EVENING';
+    return 'GOOD NIGHT';
+  }
+
+  String _firstName() {
+    final fullName = controller.profile?.customer?.fullName?.trim();
+    if (fullName == null || fullName.isEmpty) return '';
+    return fullName.split(' ').first.toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +60,19 @@ class HomeDashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Subtitle Header
-                    Text(
-                      'GOOD MORNING, DANA',
-                      style: AppTextStyles.medium2.copyWith(
-                        color: Theme.of(context).colorScheme.onSecondary,
-                      ),
+                    GetBuilder<AuthController>(
+                      builder: (controller) {
+                        final firstName = _firstName();
+                        final greeting = _greeting();
+                        return Text(
+                          firstName.isEmpty
+                              ? greeting
+                              : '$greeting, $firstName',
+                          style: AppTextStyles.medium2.copyWith(
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        );
+                      },
                     ),
                     SizedBox(height: 4.h),
 

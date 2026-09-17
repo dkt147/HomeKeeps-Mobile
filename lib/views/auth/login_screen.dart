@@ -1,12 +1,12 @@
 import 'package:country_picker/country_picker.dart';
-import 'package:flutter/gestures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
-import 'package:home_keeps/views/auth/navigator_screen.dart';
-import 'package:home_keeps/views/auth/otp_verification_screen.dart';
+import 'package:home_keeps/controller/auth_controller.dart';
+
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
+  final AuthController controller = Get.put(AuthController());
 
   Country _selectedCountry = Country(
     phoneCode: '972',
@@ -79,7 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool get _canSubmit => _digitsOnly.isNotEmpty && !_hasError;
 
+  // Uses whichever country code is currently selected in the picker.
   String get _fullPhoneNumber => '+${_selectedCountry.phoneCode}$_digitsOnly';
+
+  Future<void> _submit() async {
+    if (!_canSubmit || controller.isSendingOtp) return;
+    FocusScope.of(context).unfocus();
+    await controller.login(phone: _fullPhoneNumber);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,15 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               SizedBox(height: 16.h),
-
-              // Text(
-              //   'We send a one-time code. No password to remember.',
-              //   style: AppTextStyles.semiBold.copyWith(
-              //     color: theme.colorScheme.primary,
-              //   ),
-              // ),
-
-              // SizedBox(height: 30.h),
 
               // Field label — switches to the error color when invalid
               Text(
@@ -246,65 +245,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
               SizedBox(height: 40.h),
 
-              Opacity(
-                opacity: _canSubmit ? 1 : 0.45,
-                child: PrimaryButton(
-                  onTap: () {
-                    Get.offAll(
-                      () => NavigatorScreen(
-                        // phoneNumber: '+972 50-712-4488',
-                      ),
-                      transition: Transition.rightToLeft,
-                    );
-                  },
-                  // suffixIcon: Icon(
-                  //   Icons.arrow_right_alt_sharp,
-                  //   color: theme.colorScheme.onInverseSurface,
-                  // ),
-                  title: 'Login',
-                ),
+              GetBuilder<AuthController>(
+                builder: (controller) {
+                  return Opacity(
+                    opacity: (_canSubmit && !controller.isSendingOtp)
+                        ? 1
+                        : 0.45,
+                    child: PrimaryButton(
+                      onTap: _submit,
+                      title: controller.isSendingOtp
+                          ? 'Please wait...'
+                          : 'Login',
+                    ),
+                  );
+                },
               ),
 
               SizedBox(height: 30.h),
-
-              // RichText(
-              //   text: TextSpan(
-              //     style: AppTextStyles.small.copyWith(
-              //       color: theme.colorScheme.onSecondary,
-              //     ),
-              //     children: [
-              //       const TextSpan(text: 'By continuing you agree to the '),
-
-              //       TextSpan(
-              //         text: 'terms of use',
-              //         style: AppTextStyles.small.copyWith(
-              //           fontSize: 14.sp,
-              //           color: theme.colorScheme.onPrimaryFixed,
-              //         ),
-              //         recognizer: TapGestureRecognizer()
-              //           ..onTap = () {
-              //             // TODO
-              //           },
-              //       ),
-
-              //       const TextSpan(text: ' and the '),
-
-              //       TextSpan(
-              //         text: 'privacy policy',
-              //         style: AppTextStyles.semiBold.copyWith(
-              //           fontSize: 14.sp,
-              //           color: theme.colorScheme.onPrimaryFixed,
-              //         ),
-              //         recognizer: TapGestureRecognizer()
-              //           ..onTap = () {
-              //             // TODO
-              //           },
-              //       ),
-
-              //       const TextSpan(text: '.'),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),

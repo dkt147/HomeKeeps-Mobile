@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:home_keeps/views/auth/house_hold_setup_screen.dart';
+import 'package:home_keeps/controller/auth_controller.dart';
+
 import 'package:pinput/pinput.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  final String phoneNumber; // e.g. '+972 50-712-4488'
+  final String phoneNumber; // e.g. '+972501234567' (with country code)
 
   const OtpVerificationScreen({super.key, required this.phoneNumber});
 
@@ -21,6 +22,7 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
+  final AuthController controller = Get.find<AuthController>();
 
   static const _resendSeconds = 47;
   int _secondsLeft = _resendSeconds;
@@ -58,13 +60,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     return n >= 0 && n < words.length ? words[n] : '$n';
   }
 
-  void _resendCode() {
-    // TODO: trigger resend via API
+  Future<void> _resendCode() async {
     setState(() {
       _isError = false;
       _attemptsLeft = 2;
     });
     _pinController.clear();
+
+    await controller.login(phone: widget.phoneNumber, navigateOnSuccess: false);
     _startTimer();
   }
 
@@ -77,14 +80,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _focusNode.requestFocus();
   }
 
-  void _verify(String code) {
-    if (code.length < 6) return;
-    if (code != '123456') {
+  Future<void> _verify(String code) async {
+    if (code.length < 6 || controller.isVerifyingOtp) return;
+
+    final success = await controller.verifyOtp(
+      phone: widget.phoneNumber,
+      code: code,
+    );
+
+    if (!success) {
       _showWrongCodeError();
       return;
     }
+
     setState(() => _isError = false);
-    Get.to(() => HouseholdSetupScreen(), transition: Transition.rightToLeft);
   }
 
   @override
@@ -270,15 +279,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
               SizedBox(height: 30.h),
 
-              PrimaryButton(
-                // onTap: () => _verify(_pinController.text),
-                onTap: () {
-                  Get.to(
-                    () => HouseholdSetupScreen(),
-                    transition: Transition.rightToLeft,
+              GetBuilder<AuthController>(
+                builder: (controller) {
+                  return PrimaryButton(
+                    onTap: () => _verify(_pinController.text),
+                    title: controller.isVerifyingOtp
+                        ? 'Please wait...'
+                        : 'Verify',
                   );
                 },
-                title: 'Verify',
               ),
 
               SizedBox(height: 20.h),

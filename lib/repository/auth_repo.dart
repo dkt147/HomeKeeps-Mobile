@@ -1,163 +1,182 @@
-// import 'dart:io';
+import 'package:home_keeps/constants/app_urls.dart';
+import 'package:home_keeps/data/network/network_api_service.dart';
 
-// import 'package:home_keeps/constants/app_urls.dart';
-// import 'package:home_keeps/data/network/network_api_service.dart';
+class AuthRepo {
+  final NetworkApiService _apiService = NetworkApiService();
 
-// class AuthRepo {
-//   final NetworkApiService _apiService = NetworkApiService();
+  //Login
+  Future login({required String phone}) async {
+    final response = await _apiService.post(AppUrl.login, {"phone": phone});
 
-//   //Login
-//   Future login({
-//     required String email,
-//     required String password,
-//     // required String deviceType,
-//     // required String deviceToken,
-//   }) async {
-//     final response = await _apiService.post(AppUrl.login, {
-//       "email": email,
-//       "password": password,
-//       // "deviceType": deviceType,
-//       // "deviceToken": deviceToken,
-//     });
+    return response;
+  }
 
-//     return response;
-//   }
+  Future verifyOtp({required String phone, required String code}) async {
+    final response = await _apiService.post(AppUrl.verifyOtp, {
+      "phone": phone,
+      "code": code,
+    });
 
-//   Future forgotPassword({required String email}) async {
-//     var response = await _apiService.post(AppUrl.forgotPassword, {
-//       "email": email,
-//     });
-//     return response;
-//   }
+    return response;
+  }
 
-//   //Verify OTP
-//   Future verifyOTP({required String otp, required String email}) async {
-//     var response = await _apiService.post(AppUrl.verifyOtp, {
-//       "email": email,
+  Future logout({required String refreshToken}) async {
+    final response = await _apiService.post(AppUrl.logout, {
+      "refresh_token": refreshToken,
+    });
 
-//       "otp": otp,
-//     });
-//     return response;
-//   }
+    return response;
+  }
 
-//   Future resetPassword({
-//     required String newPassword,
-//     required String resetToken,
-//   }) async {
-//     var response = await _apiService.post(AppUrl.resetPassword, {
-//       "password": newPassword,
+  Future updateConsents({required bool consentMarketing}) async {
+    final response = await _apiService.patch(AppUrl.customerConsents, {
+      "consent_marketing": consentMarketing,
+    });
 
-//       "resetToken": resetToken,
-//     });
-//     return response;
-//   }
+    return response;
+  }
 
-//   Future changePassword({
-//     required String currentPassword,
-//     required String newPassword,
-//   }) async {
-//     var response = await _apiService.post(AppUrl.changePassword, {
-//       "currentPassword": currentPassword,
+  Future getProfile() async {
+    final response = await _apiService.get(AppUrl.customerMe);
 
-//       "newPassword": newPassword,
-//     });
-//     return response;
-//   }
+    return response;
+  }
 
-//   Future signup({
-//     required String email,
-//     required String password,
-//     required String fullName,
+  //   Future forgotPassword({required String email}) async {
+  //     var response = await _apiService.post(AppUrl.forgotPassword, {
+  //       "email": email,
+  //     });
+  //     return response;
+  //   }
 
-//     String? phone,
-//   }) async {
-//     final Map<String, dynamic> data = {
-//       "email": email,
-//       "password": password,
-//       "name": fullName,
-//     };
+  //   //Verify OTP
+  //   Future verifyOTP({required String otp, required String email}) async {
+  //     var response = await _apiService.post(AppUrl.verifyOtp, {
+  //       "email": email,
 
-//     if (phone != null && phone.trim().isNotEmpty) {
-//       data["phone"] = phone.trim();
-//     }
+  //       "otp": otp,
+  //     });
+  //     return response;
+  //   }
 
-//     final response = await _apiService.post(AppUrl.signup, data);
+  //   Future resetPassword({
+  //     required String newPassword,
+  //     required String resetToken,
+  //   }) async {
+  //     var response = await _apiService.post(AppUrl.resetPassword, {
+  //       "password": newPassword,
 
-//     return response;
-//   }
+  //       "resetToken": resetToken,
+  //     });
+  //     return response;
+  //   }
 
-//   Future allowNotifications({
-//     bool? enabled,
-//     bool? gameInvites,
-//     bool? dailySpinReminder,
-//     bool? newVendorsNearby,
-//   }) async {
-//     final Map<String, dynamic> data = {};
+  //   Future changePassword({
+  //     required String currentPassword,
+  //     required String newPassword,
+  //   }) async {
+  //     var response = await _apiService.post(AppUrl.changePassword, {
+  //       "currentPassword": currentPassword,
 
-//     if (enabled != null) data["notificationsEnabled"] = enabled;
-//     if (gameInvites != null) data["gameInvites"] = gameInvites;
-//     if (dailySpinReminder != null)
-//       data["dailySpinReminder"] = dailySpinReminder;
-//     if (newVendorsNearby != null) data["newVendorsNearby"] = newVendorsNearby;
+  //       "newPassword": newPassword,
+  //     });
+  //     return response;
+  //   }
 
-//     final response = await _apiService.post(AppUrl.notifications, data);
-//     return response;
-//   }
+  //   Future signup({
+  //     required String email,
+  //     required String password,
+  //     required String fullName,
 
-//   Future submitOnboarding({
-//     required String foodPersonality,
-//     required List<String> cuisines,
-//   }) async {
-//     final response = await _apiService.post(AppUrl.onboarding, {
-//       "foodPersonality": foodPersonality,
-//       "cuisines": cuisines,
-//     });
-//     return response;
-//   }
+  //     String? phone,
+  //   }) async {
+  //     final Map<String, dynamic> data = {
+  //       "email": email,
+  //       "password": password,
+  //       "name": fullName,
+  //     };
 
-//   Future<ProfileModel> getProfile() async {
-//     final response = await _apiService.get(AppUrl.getProfile);
-//     return ProfileModel.fromJson(response);
-//   }
+  //     if (phone != null && phone.trim().isNotEmpty) {
+  //       data["phone"] = phone.trim();
+  //     }
 
-//   Future<Map<String, dynamic>> logout({
-//     required String refreshToken,
-//     required String deviceToken,
-//   }) async {
-//     final response = await _apiService.post(AppUrl.logout, {});
-//     return response;
-//   }
+  //     final response = await _apiService.post(AppUrl.signup, data);
 
-//   Future<Map<String, dynamic>> updateSecuritySettings({
-//     bool? faceLockEnabled,
-//     bool? biometricEnabled,
-//   }) async {
-//     final Map<String, dynamic> data = {};
-//     if (faceLockEnabled != null) data["faceLockEnabled"] = faceLockEnabled;
-//     if (biometricEnabled != null) data["biometricEnabled"] = biometricEnabled;
+  //     return response;
+  //   }
 
-//     final response = await _apiService.post(AppUrl.security, data);
-//     return response;
-//   }
+  //   Future allowNotifications({
+  //     bool? enabled,
+  //     bool? gameInvites,
+  //     bool? dailySpinReminder,
+  //     bool? newVendorsNearby,
+  //   }) async {
+  //     final Map<String, dynamic> data = {};
 
-//   Future<dynamic> updateProfile({
-//     String? name,
-//     String? email,
-//     File? avatar,
-//   }) async {
-//     final fields = <String, dynamic>{
-//       if (name != null && name.isNotEmpty) "name": name,
-//       if (email != null && email.isNotEmpty) "email": email,
-//     };
+  //     if (enabled != null) data["notificationsEnabled"] = enabled;
+  //     if (gameInvites != null) data["gameInvites"] = gameInvites;
+  //     if (dailySpinReminder != null)
+  //       data["dailySpinReminder"] = dailySpinReminder;
+  //     if (newVendorsNearby != null) data["newVendorsNearby"] = newVendorsNearby;
 
-//     final files = <String, List<File>>{
-//       if (avatar != null) "avatar": [avatar],
-//     };
+  //     final response = await _apiService.post(AppUrl.notifications, data);
+  //     return response;
+  //   }
 
-//     return await _apiService.patchMultipart(
-//       url: AppUrl.getProfile,
-//       fields: fields,
-//       files: files,
-//     );
-//   }
-// }
+  //   Future submitOnboarding({
+  //     required String foodPersonality,
+  //     required List<String> cuisines,
+  //   }) async {
+  //     final response = await _apiService.post(AppUrl.onboarding, {
+  //       "foodPersonality": foodPersonality,
+  //       "cuisines": cuisines,
+  //     });
+  //     return response;
+  //   }
+
+  //   Future<ProfileModel> getProfile() async {
+  //     final response = await _apiService.get(AppUrl.getProfile);
+  //     return ProfileModel.fromJson(response);
+  //   }
+
+  //   Future<Map<String, dynamic>> logout({
+  //     required String refreshToken,
+  //     required String deviceToken,
+  //   }) async {
+  //     final response = await _apiService.post(AppUrl.logout, {});
+  //     return response;
+  //   }
+
+  //   Future<Map<String, dynamic>> updateSecuritySettings({
+  //     bool? faceLockEnabled,
+  //     bool? biometricEnabled,
+  //   }) async {
+  //     final Map<String, dynamic> data = {};
+  //     if (faceLockEnabled != null) data["faceLockEnabled"] = faceLockEnabled;
+  //     if (biometricEnabled != null) data["biometricEnabled"] = biometricEnabled;
+
+  //     final response = await _apiService.post(AppUrl.security, data);
+  //     return response;
+  //   }
+
+  //   Future<dynamic> updateProfile({
+  //     String? name,
+  //     String? email,
+  //     File? avatar,
+  //   }) async {
+  //     final fields = <String, dynamic>{
+  //       if (name != null && name.isNotEmpty) "name": name,
+  //       if (email != null && email.isNotEmpty) "email": email,
+  //     };
+
+  //     final files = <String, List<File>>{
+  //       if (avatar != null) "avatar": [avatar],
+  //     };
+
+  //     return await _apiService.patchMultipart(
+  //       url: AppUrl.getProfile,
+  //       fields: fields,
+  //       files: files,
+  //     );
+  //   }
+}

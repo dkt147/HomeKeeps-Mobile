@@ -54,11 +54,14 @@ class NetworkApiService extends GetxService {
   }
 
   dynamic _processResponse(http.Response response) {
-    final responseJson = jsonDecode(response.body);
-
+    final dynamic responseJson = response.body.trim().isEmpty
+        ? null
+        : jsonDecode(response.body);
     switch (response.statusCode) {
       case 200:
       case 201:
+        return responseJson;
+      case 204:
         return responseJson;
       case 400:
         throw Exception(_extractErrorMessage(responseJson) ?? "Bad Request");

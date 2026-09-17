@@ -4,8 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/views/auth/login_screen.dart';
-import 'package:home_keeps/views/auth/navigator_screen.dart';
-import 'package:home_keeps/views/auth/sign_in_screen.dart';
+
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class OpenWalletScreen extends StatelessWidget {
@@ -80,16 +79,16 @@ class OpenWalletScreen extends StatelessWidget {
               SizedBox(height: 36.h),
 
               // Primary CTA Button
-              PrimaryButton(
-                onTap: () {
-                  Get.to(
-                    () => SignInPhoneScreen(),
-                    transition: Transition.rightToLeft,
-                  );
-                },
-                title: 'Open my wallet',
-              ),
-              SizedBox(height: 12.h),
+              // PrimaryButton(
+              //   onTap: () {
+              //     Get.to(
+              //       () => SignInPhoneScreen(),
+              //       transition: Transition.rightToLeft,
+              //     );
+              //   },
+              //   title: 'Open my wallet',
+              // ),
+              // SizedBox(height: 12.h),
 
               // Secondary Button
               PrimaryButton(
