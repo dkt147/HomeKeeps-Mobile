@@ -1,4 +1,5 @@
 import 'package:country_picker/country_picker.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phoneController = TextEditingController();
+  final _phoneController = TextEditingController(
+    text: kDebugMode ? '3122694250' : '',
+  );
   final AuthController controller = Get.put(AuthController());
 
   Country _selectedCountry = Country(

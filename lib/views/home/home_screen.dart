@@ -4,8 +4,11 @@ import 'package:get/get.dart';
 import 'package:home_keeps/constants/app_assets.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/auth_controller.dart';
+import 'package:home_keeps/controller/product_controller.dart';
+import 'package:home_keeps/data/response/status.dart';
 import 'package:home_keeps/views/home/add_appliance_screen.dart';
 import 'package:home_keeps/views/home/appliances_detail_screen.dart';
+import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
@@ -17,6 +20,7 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   late final AuthController controller;
+  late final ProductController productController;
   @override
   void initState() {
     super.initState();
@@ -25,10 +29,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     } catch (e) {
       controller = Get.put(AuthController());
     }
+    try {
+      productController = Get.find<ProductController>();
+    } catch (e) {
+      productController = Get.put(ProductController());
+    }
 
     if (controller.profile == null) {
       controller.fetchProfile();
     }
+    productController.getProduct();
   }
 
   String _greeting() {
@@ -133,81 +143,164 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     SizedBox(height: 16.h),
 
                     // Appliance List Items
-                    _buildApplianceCard(
-                      context: context,
-                      title: 'Bosch dishwasher',
-                      subtitle: 'SMV4HVX00E',
-                      progress: 0.15,
-                      progressText: "46 days left of maker's warranty",
-                      imageWidget: AppAssets.diswasher,
-                      onTap: () {
-                        Get.to(
-                          () => ApplianceDetailScreen(
-                            daysLeft: 46,
-                            applianceName: 'Bosch dishwasher',
-                            model: 'SMV4HVX00E',
-                            // coverageLabel:
-                            //     'Manufacturer warranty · 46 days left',
-                            boughtDate: '12 Oct 2024',
-                            store: 'Electra Home, Rishon LeZion',
-                            price: 'ILS 2,790',
-                            serial: 'FD9902 004417',
-                            warrantyEndDate: '12.10.2026',
-                            serviceHistory: [
-                              ServiceHistoryItem(
-                                title: 'Water not draining',
-                                closedDate: '03.02.2026',
-                                caseNumber: '#3910',
-                              ),
-                              ServiceHistoryItem(
-                                title: 'Door seal replaced',
-                                closedDate: '18.06.2025',
-                                caseNumber: '#2604',
-                              ),
-                            ],
-                          ),
-                          transition: Transition.rightToLeft,
+                    GetBuilder<ProductController>(
+                      builder: (ctrl) {
+                        if (ctrl.apiResponse.status == Status.loading) {
+                          return ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: 2,
+                            separatorBuilder: (_, __) => 12.verticalSpace,
+                            itemBuilder: (_, __) {
+                              return _buildApplianceSkeleton();
+                            },
+                          );
+                        }
+
+                        final allItems = ctrl.productModel?.data ?? [];
+
+                        // Empty State
+                        if (allItems.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 30.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.home_repair_service_outlined,
+                                  size: 40.sp,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
+                                ),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  'No appliances found',
+                                  style: AppTextStyles.semiBold.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'You don’t have any appliances added yet.',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.small.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.separated(
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: allItems.length,
+                          shrinkWrap: true,
+                          separatorBuilder: (_, __) => 12.verticalSpace,
+                          itemBuilder: (context, index) {
+                            final item = allItems[index];
+
+                            // Convert health score from 0-100 to 0.0-1.0
+                            final healthScore =
+                                item.healthScore?.toDouble() ?? 0.0;
+
+                            return _buildApplianceCard(
+                              context: context,
+                              title: item.name ?? '',
+                              subtitle: item.serialNumber ?? '',
+
+                              // LinearProgressIndicator expects 0.0 - 1.0
+                              progress: (healthScore / 100).clamp(0.0, 1.0),
+
+                              progressText:
+                                  "${item.warrantyLeft ?? ''} left of maker's warranty",
+
+                              imageWidget: AppAssets.diswasher,
+
+                              onTap: () {
+                                Get.to(
+                                  () => ApplianceDetailScreen(
+                                    daysLeft: 46,
+                                    applianceName: item.name ?? '',
+                                    model: 'SMV4HVX00E',
+                                    boughtDate: '12 Oct 2024',
+                                    store: 'Electra Home, Rishon LeZion',
+                                    price: 'ILS 2,790',
+                                    serial: item.serialNumber ?? '',
+                                    warrantyEndDate: '12.10.2026',
+                                    serviceHistory: [
+                                      ServiceHistoryItem(
+                                        title: 'Water not draining',
+                                        closedDate: '03.02.2026',
+                                        caseNumber: '#3910',
+                                      ),
+                                      ServiceHistoryItem(
+                                        title: 'Door seal replaced',
+                                        closedDate: '18.06.2025',
+                                        caseNumber: '#2604',
+                                      ),
+                                    ],
+                                  ),
+                                  transition: Transition.rightToLeft,
+                                );
+                              },
+                            );
+                          },
                         );
                       },
                     ),
-                    SizedBox(height: 12.h),
+                    // SizedBox(height: 12.h),
 
-                    _buildApplianceCard(
-                      context: context,
-                      title: 'Samsung fridge',
-                      subtitle: 'RS68A8840S9',
-                      progress: 0.65,
-                      progressText: 'Covered until 12 Apr 2029',
-                      imageWidget: AppAssets.refrigerator,
-                      onTap: () {
-                        // Get.to(
-                        //   () => ClosingOnSiteScreen(),
-                        //   transition: Transition.rightToLeft,
-                        // );
-                      },
-                    ),
-                    SizedBox(height: 12.h),
+                    // _buildApplianceCard(
+                    //   context: context,
+                    //   title: 'Samsung fridge',
+                    //   subtitle: 'RS68A8840S9',
+                    //   progress: 0.65,
+                    //   progressText: 'Covered until 12 Apr 2029',
+                    //   imageWidget: AppAssets.refrigerator,
+                    //   onTap: () {
+                    //     // Get.to(
+                    //     //   () => ClosingOnSiteScreen(),
+                    //     //   transition: Transition.rightToLeft,
+                    //     // );
+                    //   },
+                    // ),
+                    // SizedBox(height: 12.h),
 
-                    _buildApplianceCard(
-                      context: context,
-                      title: 'Electra air conditioner',
-                      subtitle: '9 years old',
-                      tagText: 'No coverage',
-                      imageWidget: AppAssets.ac,
-                      onTap: () {},
-                    ),
-                    SizedBox(height: 12.h),
+                    // _buildApplianceCard(
+                    //   context: context,
+                    //   title: 'Electra air conditioner',
+                    //   subtitle: '9 years old',
+                    //   tagText: 'No coverage',
+                    //   imageWidget: AppAssets.ac,
+                    //   onTap: () {},
+                    // ),
+                    // SizedBox(height: 12.h),
 
-                    _buildApplianceCard(
-                      context: context,
-                      subtitle: '',
-                      title: 'Sony television',
-                      infoBoxText:
-                          "No delivery date, so we can't show coverage.",
-                      actionText: "Add it",
-                      imageWidget: AppAssets.tv,
-                      onTap: () {},
-                    ),
+                    // _buildApplianceCard(
+                    //   context: context,
+                    //   subtitle: '',
+                    //   title: 'Sony television',
+                    //   infoBoxText:
+                    //       "No delivery date, so we can't show coverage.",
+                    //   actionText: "Add it",
+                    //   imageWidget: AppAssets.tv,
+                    //   onTap: () {},
+                    // ),
                   ],
                 ),
               ),
@@ -364,6 +457,45 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           Image.asset(AppAssets.diswasher),
 
           // Right Dishwasher Product Mockup
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplianceSkeleton() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onPrimary,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        children: [
+          AppSkeleton(width: 55.w, height: 55.w, radius: 12),
+
+          SizedBox(width: 14.w),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppSkeleton(width: 130.w, height: 14.h, radius: 4),
+
+                SizedBox(height: 7.h),
+
+                AppSkeleton(width: 90.w, height: 11.h, radius: 4),
+
+                SizedBox(height: 10.h),
+
+                AppSkeleton(width: double.infinity, height: 4.h, radius: 4),
+
+                SizedBox(height: 7.h),
+
+                AppSkeleton(width: 100.w, height: 10.h, radius: 4),
+              ],
+            ),
+          ),
         ],
       ),
     );

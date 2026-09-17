@@ -7,6 +7,7 @@ import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/auth_controller.dart';
 import 'package:home_keeps/views/auth/login_screen.dart';
 import 'package:home_keeps/views/profile/deletion_account_screen.dart';
+import 'package:home_keeps/widgets/app_skeleton.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -130,32 +131,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   30.verticalSpace,
                   // Name + phone
-                  Text(
-                    displayName,
-                    style: AppTextStyles.semiBold.copyWith(
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
+                  isLoading
+                      ? AppSkeleton(width: 150.w, height: 24.h)
+                      : Text(
+                          displayName,
+                          style: AppTextStyles.semiBold.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
                   SizedBox(height: 4.h),
-                  Text(
-                    phone,
-                    style: AppTextStyles.small.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                    ),
-                  ),
+                  isLoading
+                      ? AppSkeleton(width: 100.w, height: 14.h)
+                      : Text(
+                          phone,
+                          style: AppTextStyles.small.copyWith(
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        ),
 
                   SizedBox(height: 30.h),
                   _sectionKicker('details'.tr),
                   SizedBox(height: 6.h),
 
-                  _linkRow(label: 'email'.tr, value: email, onTap: () {}),
-                  _linkRow(
-                    label: 'address'.tr,
-                    value: address,
-                    onTap: () {
-                      // TODO: edit address
-                    },
-                  ),
+                  isLoading
+                      ? AppSkeleton(width: double.infinity, height: 20.h)
+                      : _linkRow(label: 'email'.tr, value: email, onTap: () {}),
+                  isLoading
+                      ? AppSkeleton(width: double.infinity, height: 20.h)
+                      : _linkRow(
+                          label: 'address'.tr,
+                          value: address,
+                          onTap: () {
+                            // TODO: edit address
+                          },
+                        ),
 
                   SizedBox(height: 24.h),
                   _sectionKicker('PREFERENCES'),

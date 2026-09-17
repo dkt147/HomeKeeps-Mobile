@@ -35,6 +35,8 @@ class Product {
   final String? deletedAt;
   final String? createdAt;
   final String? updatedAt;
+  final String? warrantyLeft;
+  final String? name;
 
   Product({
     this.id,
@@ -57,6 +59,8 @@ class Product {
     this.deletedAt,
     this.createdAt,
     this.updatedAt,
+    this.warrantyLeft,
+    this.name,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -81,6 +85,8 @@ class Product {
       deletedAt: json['deleted_at']?.toString(),
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
+      warrantyLeft: json['warranty_left']?.toString(),
+      name: json['name']?.toString(),
     );
   }
 
@@ -106,6 +112,8 @@ class Product {
       'deleted_at': deletedAt,
       'created_at': createdAt,
       'updated_at': updatedAt,
+      'warranty_left': warrantyLeft,
+      'name': name,
     };
   }
 }

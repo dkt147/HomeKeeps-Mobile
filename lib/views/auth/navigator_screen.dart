@@ -106,7 +106,7 @@ class _NavigatorScreenState extends State<NavigatorScreen> {
   }) {
     bool isSelected = navigationController.selectedIndex == index;
 
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         navigationController.selectIndex(index);
       },
