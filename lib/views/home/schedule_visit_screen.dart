@@ -74,38 +74,38 @@ class _ScheduleVisitScreenState extends State<ScheduleVisitScreen> {
       'Address: ${widget.address}, notes: ${_notesController.text}, '
       'slots: ${_selected.map((s) => '${s.day} ${s.time}').join(', ')}',
     );
-    Get.to(
-      () => CaseTimelineScreen(
-        caseNumber: '#4471',
-        // applianceName: 'Bosch dishwasher',
-        // issueTitle: "Water isn't draining",
-        // chipStatus: WalletChipStatus.technicianScheduled,
-        steps: [
-          CaseStep(
-            title: 'Request received',
-            subtitle: '24.08.2026 · 09:12',
-            status: CaseStepStatus.done,
-          ),
-          CaseStep(
-            title: 'Coverage confirmed',
-            subtitle: '24.08.2026 · 09:12 · covered by your extended warranty',
-            status: CaseStepStatus.done,
-          ),
-          CaseStep(
-            title: 'Technician assigned',
-            subtitle: '25.08.2026 · 11:40 · Amir from Kav Service',
-            status: CaseStepStatus.done,
-          ),
-          CaseStep(
-            title: 'Visit on Thursday, 14:00–17:00',
-            subtitle: "You'll get a text when he's on the way",
-            status: CaseStepStatus.current,
-          ),
-          CaseStep(title: 'Repair complete', status: CaseStepStatus.future),
-        ],
-      ),
-      transition: Transition.rightToLeft,
-    );
+    // Get.to(
+    //   () => CaseTimelineScreen(
+    //     caseNumber: '#4471',
+    //     // applianceName: 'Bosch dishwasher',
+    //     // issueTitle: "Water isn't draining",
+    //     // chipStatus: WalletChipStatus.technicianScheduled,
+    //     steps: [
+    //       CaseStep(
+    //         title: 'Request received',
+    //         subtitle: '24.08.2026 · 09:12',
+    //         status: CaseStepStatus.done,
+    //       ),
+    //       CaseStep(
+    //         title: 'Coverage confirmed',
+    //         subtitle: '24.08.2026 · 09:12 · covered by your extended warranty',
+    //         status: CaseStepStatus.done,
+    //       ),
+    //       CaseStep(
+    //         title: 'Technician assigned',
+    //         subtitle: '25.08.2026 · 11:40 · Amir from Kav Service',
+    //         status: CaseStepStatus.done,
+    //       ),
+    //       CaseStep(
+    //         title: 'Visit on Thursday, 14:00–17:00',
+    //         subtitle: "You'll get a text when he's on the way",
+    //         status: CaseStepStatus.current,
+    //       ),
+    //       CaseStep(title: 'Repair complete', status: CaseStepStatus.future),
+    //     ],
+    //   ),
+    //   transition: Transition.rightToLeft,
+    // );
   }
 
   Widget _stepRail(ThemeData theme) {

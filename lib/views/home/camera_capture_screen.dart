@@ -100,7 +100,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   }
 
   void _skipToStockImage() {
-    Get.off(() => ManualEntryScreen(), transition: Transition.rightToLeft);
+    // Get.off(() => ManualEntryScreen(), transition: Transition.rightToLeft);
   }
 
   @override

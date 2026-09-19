@@ -56,23 +56,23 @@ class _CheckingCoverageScreenState extends State<CheckingCoverageScreen>
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const RepairCoveredScreen(
-              manufacturer: 'Bosch',
-              providerName: 'BSH Service Israel',
-              providerPhoneDisplay: '*6110',
-              providerHours: 'Sun–Thu 08:00–17:00',
-              model: 'SMV4HVX00E',
-              serial: 'FD9902 004417',
-              caseReference: '#4471',
-            ),
-          ),
-        );
-      }
-    });
+    // Timer(const Duration(seconds: 3), () {
+    //   if (mounted) {
+    //     Navigator.of(context).pushReplacement(
+    //       MaterialPageRoute(
+    //         builder: (context) => const RepairCoveredScreen(
+    //           manufacturer: 'Bosch',
+    //           providerName: 'BSH Service Israel',
+    //           providerPhoneDisplay: '*6110',
+    //           providerHours: 'Sun–Thu 08:00–17:00',
+    //           model: 'SMV4HVX00E',
+    //           serial: 'FD9902 004417',
+    //           caseReference: '#4471',
+    //         ),
+    //       ),
+    //     );
+    //   }
+    // });
   }
 
   @override

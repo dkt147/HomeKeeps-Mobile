@@ -42,6 +42,18 @@ class AuthRepo {
     return response;
   }
 
+  Future<dynamic> deleteAccount({String? reason}) async {
+    final data = <String, dynamic>{};
+
+    if (reason != null && reason.trim().isNotEmpty) {
+      data['reason'] = reason.trim();
+    }
+
+    final response = await _apiService.post(AppUrl.deleteAccount, data);
+
+    return response;
+  }
+
   //   Future forgotPassword({required String email}) async {
   //     var response = await _apiService.post(AppUrl.forgotPassword, {
   //       "email": email,

@@ -8,6 +8,7 @@ import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/data/response/status.dart';
 import 'package:home_keeps/views/home/add_appliance_screen.dart';
 import 'package:home_keeps/views/home/appliances_detail_screen.dart';
+import 'package:home_keeps/views/home/out_of_cover_screen.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
@@ -39,6 +40,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       controller.fetchProfile();
     }
     productController.getProduct();
+    productController.getHomeSummary();
+    productController.getWarrantyCase();
   }
 
   String _greeting() {
@@ -97,49 +100,101 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     SizedBox(height: 16.h),
 
                     // Top Metric Row Cards
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildMetricCard(
-                            context: context,
-                            value: '7',
-                            label: 'appliances',
-                            isHighlighted: false,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _buildMetricCard(
-                            context: context,
-                            value: '5',
-                            label: 'covered',
-                            isHighlighted: false,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _buildMetricCard(
-                            context: context,
-                            value: '2',
-                            label: 'uncovered',
-                            isHighlighted: false,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: _buildMetricCard(
-                            context: context,
-                            value: '1',
-                            label: 'needs you',
-                            isHighlighted: true,
-                          ),
-                        ),
-                      ],
+                    GetBuilder<ProductController>(
+                      init: ProductController(),
+                      initState: (_) {
+                        final controller = Get.find<ProductController>();
+                        controller.getHomeSummary();
+                      },
+                      builder: (controller) {
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: controller.homeSummaryModel == null
+                                  ? const AppSkeleton(
+                                      width: double.infinity,
+                                      height: 68,
+                                      radius: 16,
+                                    )
+                                  : _buildMetricCard(
+                                      context: context,
+                                      value:
+                                          '${controller.homeSummaryModel?.total ?? 0}',
+                                      label: 'appliances',
+                                      isHighlighted: false,
+                                    ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: controller.homeSummaryModel == null
+                                  ? const AppSkeleton(
+                                      width: double.infinity,
+                                      height: 68,
+                                      radius: 16,
+                                    )
+                                  : _buildMetricCard(
+                                      context: context,
+                                      value:
+                                          '${controller.homeSummaryModel?.underWarranty ?? 0}',
+                                      label: 'covered',
+                                      isHighlighted: false,
+                                    ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: controller.homeSummaryModel == null
+                                  ? const AppSkeleton(
+                                      width: double.infinity,
+                                      height: 68,
+                                      radius: 16,
+                                    )
+                                  : _buildMetricCard(
+                                      context: context,
+                                      value:
+                                          '${controller.homeSummaryModel?.uncovered ?? 0}',
+                                      label: 'uncovered',
+                                      isHighlighted: false,
+                                    ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: controller.homeSummaryModel == null
+                                  ? const AppSkeleton(
+                                      width: double.infinity,
+                                      height: 68,
+                                      radius: 16,
+                                    )
+                                  : _buildMetricCard(
+                                      context: context,
+                                      value:
+                                          '${controller.homeSummaryModel?.needsAction ?? 0}',
+                                      label: 'needs you',
+                                      isHighlighted: true,
+                                    ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     SizedBox(height: 20.h),
 
-                    // Featured Banner Card ("Worth doing now")
-                    _buildWorthDoingCard(context),
+                    GetBuilder<ProductController>(
+                      init: ProductController(),
+                      initState: (_) {
+                        final controller = Get.find<ProductController>();
+                        controller.getHomeSummary();
+                        controller.getWarrantyCase();
+                      },
+                      builder: (controller) {
+                        return Column(
+                          children: [
+                            controller.warrantyCaseStatusModel == null
+                                ? _buildWorthDoingSkeleton()
+                                : _buildWorthDoingCard(context, controller),
+                          ],
+                        );
+                      },
+                    ),
                     SizedBox(height: 16.h),
 
                     // Appliance List Items
@@ -234,26 +289,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                               onTap: () {
                                 Get.to(
                                   () => ApplianceDetailScreen(
-                                    daysLeft: 46,
-                                    applianceName: item.name ?? '',
-                                    model: 'SMV4HVX00E',
-                                    boughtDate: '12 Oct 2024',
-                                    store: 'Electra Home, Rishon LeZion',
-                                    price: 'ILS 2,790',
-                                    serial: item.serialNumber ?? '',
-                                    warrantyEndDate: '12.10.2026',
-                                    serviceHistory: [
-                                      ServiceHistoryItem(
-                                        title: 'Water not draining',
-                                        closedDate: '03.02.2026',
-                                        caseNumber: '#3910',
-                                      ),
-                                      ServiceHistoryItem(
-                                        title: 'Door seal replaced',
-                                        closedDate: '18.06.2025',
-                                        caseNumber: '#2604',
-                                      ),
-                                    ],
+                                    id: item.id.toString(),
+                                    // daysLeft: 46,
+                                    // applianceName: item.name ?? '',
+                                    // model: 'SMV4HVX00E',
+                                    // boughtDate: '12 Oct 2024',
+                                    // store: 'Electra Home, Rishon LeZion',
+                                    // price: 'ILS 2,790',
+                                    // serial: item.serialNumber ?? '',
+                                    // warrantyEndDate: '12.10.2026',
+                                    // serviceHistory: [
+                                    //   ServiceHistoryItem(
+                                    //     title: 'Water not draining',
+                                    //     closedDate: '03.02.2026',
+                                    //     caseNumber: '#3910',
+                                    //   ),
+                                    //   ServiceHistoryItem(
+                                    //     title: 'Door seal replaced',
+                                    //     closedDate: '18.06.2025',
+                                    //     caseNumber: '#2604',
+                                    //   ),
+                                    // ],
                                   ),
                                   transition: Transition.rightToLeft,
                                 );
@@ -368,10 +424,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   // --- WORTH DOING NOW BANNER ---
-  Widget _buildWorthDoingCard(BuildContext context) {
+  Widget _buildWorthDoingCard(
+    BuildContext context,
+    ProductController controller,
+  ) {
+    final warrantyCase = controller.warrantyCaseStatusModel;
+
+    final manufacturerName = warrantyCase?.product?.manufacturerName ?? '';
+    final category = warrantyCase?.product?.categoryName ?? '';
+
+    final daysRemaining =
+        warrantyCase?.manufacturerWarranty?.daysRemaining ?? 0;
+
     return Container(
       width: double.infinity,
-
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(24.r),
@@ -391,72 +457,50 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   ),
                 ),
                 SizedBox(height: 10.h),
+
                 SizedBox(
-                  width: 170.w,
+                  width: 190.w,
                   child: Text(
-                    "Your Bosch dishwasher's warranty ends in 46 days",
+                    "$manufacturerName $category warranty ends in $daysRemaining days",
                     style: AppTextStyles.semiBold.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                       height: 1.2,
                     ),
                   ),
                 ),
+
                 SizedBox(height: 8.h),
+
                 SizedBox(
                   width: 170.w,
                   child: Text(
                     "You can extend it now, while it's still covered.",
                     style: AppTextStyles.small.copyWith(
                       color: Theme.of(context).colorScheme.onSecondary,
-
                       height: 1.3,
                     ),
                   ),
                 ),
+
                 SizedBox(height: 18.h),
 
-                // Sub-button inside the card
                 PrimaryButton(
                   bg: Theme.of(context).colorScheme.onPrimary,
                   textcolor: Theme.of(context).colorScheme.primary,
                   width: 190.w,
                   onTap: () {
-                    // Get.to(
-                    //   () => ExtendedWarrantyOfferScreen(
-                    //     applianceName: 'Bosch dishwasher',
-                    //     headline:
-                    //         'Three more years of repairs, after Bosch stops covering it',
-                    //     price: '₪690',
-                    //     priceNote: 'once · covers 36 months',
-                    //     covered: const [
-                    //       'Mechanical and electrical breakdown',
-                    //       'Technician call-out, labour and parts',
-                    //       'Unlimited number of visits',
-                    //       "Replacement if it can't be repaired",
-                    //     ],
-                    //     notCovered: const [
-                    //       'Accidental damage, misuse and cosmetic wear',
-                    //       'Faults that already exist today',
-                    //       'Consumables: filters, seals, hoses',
-                    //       'Commercial or business use',
-                    //     ],
-                    //     coverBegins: '13.10.2026',
-                    //     waitingPeriod: '30 days from purchase',
-                    //     yourSharePerClaim: '₪0',
-                    //     claimLimit: '₪2,790',
-                    //     term: '36 months',
-                    //   ),
-                    //   transition: Transition.rightToLeft,
-                    // );
+                    Get.to(
+                      () => OutOfCoverScreen(),
+                      transition: Transition.rightToLeft,
+                    );
                   },
                   title: "See what's covered",
                 ),
               ],
             ),
           ),
-          Image.asset(AppAssets.diswasher),
 
-          // Right Dishwasher Product Mockup
+          Image.asset(AppAssets.diswasher),
         ],
       ),
     );
@@ -495,6 +539,42 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 AppSkeleton(width: 100.w, height: 10.h, radius: 4),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWorthDoingSkeleton() {
+    return Container(
+      width: double.infinity,
+      height: 250.h,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(24.r)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppSkeleton(width: 110.w, height: 12.h, radius: 4),
+                SizedBox(height: 12.h),
+
+                AppSkeleton(width: 170.w, height: 38.h, radius: 6),
+                SizedBox(height: 10.h),
+
+                AppSkeleton(width: 160.w, height: 30.h, radius: 6),
+                SizedBox(height: 18.h),
+
+                AppSkeleton(width: 190.w, height: 42.h, radius: 22),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: EdgeInsets.only(right: 12.w),
+            child: AppSkeleton(width: 100.w, height: 150.h, radius: 12),
           ),
         ],
       ),

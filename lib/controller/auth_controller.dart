@@ -7,6 +7,7 @@ import 'package:home_keeps/models/profile_model.dart';
 import 'package:home_keeps/repository/auth_repo.dart';
 import 'package:home_keeps/resources/local_storage.dart';
 import 'package:home_keeps/resources/local_storage_keys.dart';
+import 'package:home_keeps/utils/utils.dart';
 
 import 'package:home_keeps/views/auth/navigator_screen.dart';
 import 'package:home_keeps/views/auth/otp_verification_screen.dart';
@@ -22,6 +23,7 @@ class AuthController extends BaseController {
   bool isLoggingOut = false;
   bool isUpdatingConsent = false;
   bool isLoadingProfile = false;
+  bool isDeletingAccount = false;
 
   String _phone = '';
   String get phone => _phone;
@@ -208,5 +210,25 @@ class AuthController extends BaseController {
       update();
     }
     return success;
+  }
+
+  Future<void> deleteAccount({String? reason}) async {
+    isDeletingAccount = true;
+    update();
+
+    try {
+      final result = await authRepo.deleteAccount(reason: reason);
+
+      handleSuccess(
+        result['message']?.toString() ?? 'Account deleted successfully',
+      );
+
+      await LocalStorage.clearCredentials();
+    } catch (e) {
+      Utils.errorBar(e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      isDeletingAccount = false;
+      update();
+    }
   }
 }

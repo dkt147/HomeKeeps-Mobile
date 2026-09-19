@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
+import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class EditApplianceScreen extends StatefulWidget {
+  final String productId;
   final String initialModel;
   final String initialSerial;
   final DateTime initialPurchaseDate;
@@ -11,6 +14,7 @@ class EditApplianceScreen extends StatefulWidget {
 
   const EditApplianceScreen({
     super.key,
+    required this.productId,
     required this.initialModel,
     required this.initialSerial,
     required this.initialPurchaseDate,
@@ -22,6 +26,8 @@ class EditApplianceScreen extends StatefulWidget {
 }
 
 class _EditApplianceScreenState extends State<EditApplianceScreen> {
+  late final ProductController productController;
+
   late final _modelController = TextEditingController(
     text: widget.initialModel,
   );
@@ -29,6 +35,14 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
     text: widget.initialSerial,
   );
   late DateTime _purchaseDate = widget.initialPurchaseDate;
+
+  @override
+  void initState() {
+    super.initState();
+    productController = Get.isRegistered<ProductController>()
+        ? Get.find<ProductController>()
+        : Get.put(ProductController());
+  }
 
   @override
   void dispose() {
@@ -52,13 +66,14 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
     if (picked != null) setState(() => _purchaseDate = picked);
   }
 
-  void _saveChanges() {
-    debugPrint(
-      'Model: ${_modelController.text}, '
-      'Serial: ${_serialController.text}, '
-      'Purchase date: $_formattedDate',
+  Future<void> _saveChanges() async {
+    final ok = await productController.updateProduct(
+      id: widget.productId,
+      model: _modelController.text.trim(),
+      serialNumber: _serialController.text.trim(),
     );
-    Navigator.of(context).maybePop();
+
+    if (ok) Navigator.of(context).maybePop();
   }
 
   Widget _fieldLabel(String label) {
@@ -99,7 +114,6 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
                       'Cancel',
                       style: AppTextStyles.semiBold.copyWith(
                         fontSize: 15.sp,
-                        // fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onPrimaryFixed,
                       ),
                     ),
@@ -170,11 +184,10 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
               ),
               SizedBox(height: 20.h),
 
-              // PURCHASE DATE
               _fieldLabel('PURCHASE DATE'),
               SizedBox(height: 8.h),
               GestureDetector(
-                onTap: _pickDate,
+                // onTap: _pickDate,
                 child: Container(
                   height: 52.h,
                   padding: EdgeInsets.symmetric(horizontal: 14.w),
@@ -203,7 +216,6 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
                 ),
               ),
 
-              // Review note — only shown when it's actually relevant
               if (widget.hasActiveExtendedWarranty) ...[
                 SizedBox(height: 10.h),
                 Row(
@@ -244,10 +256,16 @@ class _EditApplianceScreenState extends State<EditApplianceScreen> {
 
               SizedBox(height: 28.h),
 
-              PrimaryButton(onTap: _saveChanges, title: 'Save changes'),
+              GetBuilder<ProductController>(
+                builder: (controller) => PrimaryButton(
+                  onTap: controller.isUpdatingProduct ? () {} : _saveChanges,
+                  title: controller.isUpdatingProduct
+                      ? 'Saving...'
+                      : 'Save changes',
+                ),
+              ),
               SizedBox(height: 30.h),
 
-              // Optimistic-save note
               Text(
                 'Saved immediately in the app. If the server rejects it, '
                 'we roll the change back and tell you why.',

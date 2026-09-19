@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
+import 'package:home_keeps/controller/auth_controller.dart';
 import 'package:home_keeps/views/auth/login_screen.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
@@ -16,6 +17,18 @@ class DeletionAccountScreen extends StatefulWidget {
 
 class _DeletionAccountScreenState extends State<DeletionAccountScreen> {
   final searchController = TextEditingController();
+  late final AuthController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      controller = Get.find<AuthController>();
+    } catch (e) {
+      controller = Get.put(AuthController());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -108,6 +121,8 @@ class _DeletionAccountScreenState extends State<DeletionAccountScreen> {
                 style: AppTextStyles.small.copyWith(
                   color: Theme.of(context).colorScheme.primary,
                 ),
+                onTapOutside: (event) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
                 maxLines: 6,
 
                 decoration: InputDecoration(
@@ -136,7 +151,12 @@ class _DeletionAccountScreenState extends State<DeletionAccountScreen> {
                         "You can cancel it by contacting us at any point in the next 30 days. After that it cannot be undone.?",
                     confirmText: "Yes,send it",
 
-                    onConfirm: () async {},
+                    onConfirm: () async {
+                      final reason = searchController.text.trim();
+                      await controller.deleteAccount(
+                        reason: reason.isEmpty ? null : reason,
+                      );
+                    },
                   );
                 },
                 title: "Send the request",
