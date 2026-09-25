@@ -7,12 +7,19 @@ import 'package:home_keeps/constants/app_assets.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/data/response/status.dart';
+import 'package:home_keeps/models/product_detail_model.dart' show DocumentModel;
 import 'package:home_keeps/views/home/edit_appliance_screen.dart';
 import 'package:home_keeps/views/home/extended_cover_screen.dart';
 import 'package:home_keeps/views/home/fault_options_screen.dart';
+import 'package:home_keeps/widgets/app_skeleton.dart';
 
 import 'package:home_keeps/widgets/primary_button.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceHistoryItem {
   final String title;
@@ -53,6 +60,112 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
   }
 
   bool _remindMe = true;
+  Future<void> _shareDocument(DocumentModel doc) async {
+    final id = doc.id;
+    if (id == null) return;
+
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      final url = await productController.getDocumentShareUrl(documentId: id);
+
+      if (url == null) {
+        Get.back();
+        Get.snackbar('Error', 'Could not get share link');
+        return;
+      }
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        Get.back();
+        Get.snackbar('Error', 'Could not download document');
+        return;
+      }
+
+      final dir = await getTemporaryDirectory();
+      final ext = _docExt(doc.mime).toLowerCase().isEmpty
+          ? 'bin'
+          : _docExt(doc.mime).toLowerCase();
+      final file = File('${dir.path}/${_docTypeLabel(doc.type)}_$id.$ext');
+      await file.writeAsBytes(response.bodyBytes);
+
+      Get.back();
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      Get.back();
+      Get.snackbar('Error', 'Something went wrong');
+    }
+  }
+
+  Future<void> _viewDocument(DocumentModel doc) async {
+    final id = doc.id;
+    if (id == null) return;
+
+    final url = await productController.getDocumentShareUrl(documentId: id);
+    if (url == null) {
+      Get.snackbar('Error', 'Could not open document');
+      return;
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar('Error', 'Could not open document');
+    }
+  }
+
+  IconData _docIcon(String? type) {
+    switch (type) {
+      case 'invoice':
+        return Icons.receipt_long_outlined;
+      case 'warranty_certificate':
+        return Icons.shield_outlined;
+      case 'label':
+        return Icons.label_outline;
+      default:
+        return Icons.description_outlined;
+    }
+  }
+
+  String _docTypeLabel(String? type) {
+    switch (type) {
+      case 'invoice':
+        return 'Receipt';
+      case 'warranty_certificate':
+        return 'Warranty certificate';
+      case 'label':
+        return 'Label';
+      default:
+        if (type == null || type.isEmpty) return 'Document';
+        final s = type.replaceAll('_', ' ');
+        return s[0].toUpperCase() + s.substring(1);
+    }
+  }
+
+  String _docExt(String? mime) {
+    if (mime == null || mime.isEmpty) return '';
+    if (mime == 'application/pdf') return 'PDF';
+    final sub = mime.split('/').last.toLowerCase();
+    if (sub == 'jpeg') return 'JPG';
+    return sub.toUpperCase();
+  }
+
+  String _docSize(int? bytes) {
+    if (bytes == null) return '';
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  String _docDate(String? iso) {
+    final d = DateTime.tryParse(iso ?? '')?.toLocal();
+    if (d == null) return '';
+    return DateFormat('dd MMM yyyy').format(d);
+  }
 
   Widget _sectionKicker(String label) {
     return Padding(
@@ -203,9 +316,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
       body: GetBuilder<ProductController>(
         builder: (controller) {
           if (controller.apiResponse.status == Status.loading) {
-            return Center(
-              child: CircularProgressIndicator(color: Color(0xFF1B2050)),
-            );
+            return _buildSkeleton();
           }
           final healthScore =
               productController.productDetailModel?.data?.healthScore
@@ -377,6 +488,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                     ),
                   ],
                 ),
+                15.verticalSpace,
 
                 // Main Content Area
                 Padding(
@@ -457,104 +569,148 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                       ),
 
                       // DOCUMENTS
+                      // DOCUMENTS
                       _sectionKicker('DOCUMENTS'),
-                      _buildCardContainer(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Receipt',
-                                    style: AppTextStyles.semiBold.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                                  ),
-                                  Text(
-                                    'PDF · added 12 Oct 2026',
-                                    style: AppTextStyles.small.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondary,
-                              ),
-                              onPressed: () {},
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.share_outlined,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondary,
-                              ),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      _buildCardContainer(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.shield_outlined,
-                              color: Theme.of(context).colorScheme.onSecondary,
-                            ),
-                            SizedBox(width: 12.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Warranty certificate',
-                                    style: AppTextStyles.semiBold.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Not here yet — add it when you have a moment',
-                                    style: AppTextStyles.small.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {},
+                      Builder(
+                        builder: (context) {
+                          final docs =
+                              productController
+                                  .productDetailModel
+                                  ?.data
+                                  ?.documents ??
+                              [];
+
+                          if (docs.isEmpty) {
+                            return _buildCardContainer(
                               child: Text(
-                                'Add',
-                                style: AppTextStyles.semiBold.copyWith(
-                                  fontSize: 15.sp,
-                                  color: Theme.of(context).colorScheme.primary,
+                                'No documents yet — add a receipt, label, or warranty certificate.',
+                                style: AppTextStyles.small.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                            );
+                          }
+
+                          return Column(
+                            children: [
+                              for (int i = 0; i < docs.length; i++) ...[
+                                _buildCardContainer(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        _docIcon(docs[i].type),
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _docTypeLabel(docs[i].type),
+                                              style: AppTextStyles.semiBold
+                                                  .copyWith(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                  ),
+                                            ),
+                                            Text(
+                                              [
+                                                    _docExt(docs[i].mime),
+                                                    _docSize(docs[i].sizeBytes),
+                                                    'added ${_docDate(docs[i].createdAt)}',
+                                                  ]
+                                                  .where((e) => e.isNotEmpty)
+                                                  .join(' · '),
+                                              style: AppTextStyles.small
+                                                  .copyWith(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.onSecondary,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.remove_red_eye_outlined,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSecondary,
+                                        ),
+                                        onPressed: () => _viewDocument(docs[i]),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.share_outlined,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSecondary,
+                                        ),
+                                        onPressed: () =>
+                                            _shareDocument(docs[i]),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (i != docs.length - 1) SizedBox(height: 8.h),
+                              ],
+                            ],
+                          );
+                        },
                       ),
+                      SizedBox(height: 8.h),
+                      // _buildCardContainer(
+                      //   child: Row(
+                      //     children: [
+                      //       Icon(
+                      //         Icons.shield_outlined,
+                      //         color: Theme.of(context).colorScheme.onSecondary,
+                      //       ),
+                      //       SizedBox(width: 12.w),
+                      //       Expanded(
+                      //         child: Column(
+                      //           crossAxisAlignment: CrossAxisAlignment.start,
+                      //           children: [
+                      //             Text(
+                      //               'Warranty certificate',
+                      //               style: AppTextStyles.semiBold.copyWith(
+                      //                 color: Theme.of(
+                      //                   context,
+                      //                 ).colorScheme.primary,
+                      //               ),
+                      //             ),
+                      //             Text(
+                      //               'Not here yet — add it when you have a moment',
+                      //               style: AppTextStyles.small.copyWith(
+                      //                 color: Theme.of(
+                      //                   context,
+                      //                 ).colorScheme.onSecondary,
+                      //               ),
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ),
+                      //       TextButton(
+                      //         onPressed: () {},
+                      //         child: Text(
+                      //           'Add',
+                      //           style: AppTextStyles.semiBold.copyWith(
+                      //             fontSize: 15.sp,
+                      //             color: Theme.of(context).colorScheme.primary,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
 
                       // WARRANTY
                       _sectionKicker('WARRANTY'),
@@ -589,7 +745,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                               textcolor: Theme.of(context).colorScheme.primary,
                               onTap: () {
                                 Get.to(
-                                  () => ExtendedCoverScreen(),
+                                  () => ExtendedCoverScreen(id: widget.id),
                                   transition: Transition.rightToLeft,
                                 );
                                 // Get.to(
@@ -814,5 +970,137 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
     } catch (e) {
       return '';
     }
+  }
+
+  Widget _buildSkeleton() {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top image header placeholder
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 400.h,
+                width: double.infinity,
+                color: const Color(0xFFD8DCED),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 10.h,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // AppSkeleton(width: 40.w, height: 40.h, radius: 20),
+                        // Row(
+                        //   children: [
+                        //     AppSkeleton(width: 60.w, height: 32.h, radius: 16),
+                        //     SizedBox(width: 8.w),
+                        //     AppSkeleton(width: 40.w, height: 40.h, radius: 20),
+                        //   ],
+                        // ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Overlapping card placeholder
+              Positioned(
+                left: 16.w,
+                right: 16.w,
+                bottom: -100.h,
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppSkeleton(width: 180.w, height: 16.h),
+                      SizedBox(height: 8.h),
+                      AppSkeleton(width: 120.w, height: 12.h),
+                      SizedBox(height: 14.h),
+                      AppSkeleton(
+                        width: double.infinity,
+                        height: 6.h,
+                        radius: 4,
+                      ),
+                      SizedBox(height: 10.h),
+                      AppSkeleton(width: 220.w, height: 12.h),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          15.verticalSpace,
+
+          // Main content placeholder
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 100.h),
+
+                // "Something's wrong" button placeholder
+                AppSkeleton(width: double.infinity, height: 56.h, radius: 28),
+
+                // PURCHASE
+                _skeletonSectionLabel(),
+                _skeletonCard(height: 130.h),
+
+                // DOCUMENTS
+                _skeletonSectionLabel(),
+                _skeletonCard(height: 64.h),
+                SizedBox(height: 8.h),
+                _skeletonCard(height: 64.h),
+
+                // WARRANTY
+                _skeletonSectionLabel(),
+                _skeletonCard(height: 120.h),
+
+                // SERVICE HISTORY
+                _skeletonSectionLabel(),
+                _skeletonCard(height: 56.h),
+
+                // SETTINGS
+                _skeletonSectionLabel(),
+                _skeletonCard(height: 100.h),
+
+                SizedBox(height: 20.h),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _skeletonSectionLabel() {
+    return Padding(
+      padding: EdgeInsets.only(left: 4.w, bottom: 8.h, top: 16.h),
+      child: AppSkeleton(width: 100.w, height: 12.h),
+    );
+  }
+
+  Widget _skeletonCard({required double height}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.onPrimary,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: AppSkeleton(width: double.infinity, height: height, radius: 12),
+    );
   }
 }

@@ -367,9 +367,41 @@ class ExtendedWarranty {
 }
 
 class DocumentModel {
-  DocumentModel();
+  String? id;
+  String? type;
+  String? mime;
+  int? sizeBytes;
+  String? ocrStatus;
+  String? createdAt;
+  String? updatedAt;
 
-  DocumentModel.fromJson(Map<String, dynamic> json);
+  DocumentModel({
+    this.id,
+    this.type,
+    this.mime,
+    this.sizeBytes,
+    this.ocrStatus,
+    this.createdAt,
+    this.updatedAt,
+  });
 
-  Map<String, dynamic> toJson() => {};
+  DocumentModel.fromJson(Map<String, dynamic> json) {
+    id = json['_id']?.toString();
+    type = json['type']?.toString();
+    mime = json['mime']?.toString();
+    sizeBytes = num.tryParse(json['size_bytes']?.toString() ?? '')?.toInt();
+    ocrStatus = json['ocr_status']?.toString();
+    createdAt = json['created_at']?.toString();
+    updatedAt = json['updated_at']?.toString();
+  }
+
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'type': type,
+    'mime': mime,
+    'size_bytes': sizeBytes,
+    'ocr_status': ocrStatus,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
 }

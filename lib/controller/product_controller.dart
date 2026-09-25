@@ -5,6 +5,7 @@ import 'package:home_keeps/data/response/api_response.dart';
 import 'package:home_keeps/models/document_model.dart';
 import 'package:home_keeps/models/home_summary_model.dart';
 import 'package:home_keeps/models/manufactures_model.dart';
+import 'package:home_keeps/models/offers_model.dart';
 import 'package:home_keeps/models/product_category_model.dart';
 import 'package:home_keeps/models/product_detail_model.dart';
 import 'package:home_keeps/models/product_model.dart';
@@ -36,6 +37,9 @@ class ProductController extends BaseController {
   bool documentsError = false;
   bool isUploadingDocument = false;
   ProductCategoriesModel? categoriesModel;
+  OffersModel? offersModel;
+  bool isOffersLoading = true;
+  bool offersError = false;
   bool isCategoriesLoading = true;
   bool categoriesError = false;
   bool isUpdatingProduct = false;
@@ -417,6 +421,31 @@ class ProductController extends BaseController {
       return false;
     } finally {
       isCreatingProduct = false;
+      update();
+    }
+  }
+
+  Future<String?> getDocumentShareUrl({required String documentId}) async {
+    try {
+      return await productRepo.getDocumentUrl(documentId: documentId);
+    } catch (e) {
+      handleError(e.toString());
+      return null;
+    }
+  }
+
+  Future<void> getOffers({required String productId}) async {
+    try {
+      isOffersLoading = true;
+      offersError = false;
+      update();
+
+      offersModel = await productRepo.getOffers(productId: productId);
+    } catch (e) {
+      offersError = true;
+      handleError(e.toString());
+    } finally {
+      isOffersLoading = false;
       update();
     }
   }

@@ -131,7 +131,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     final submittedPinTheme = defaultPinTheme;
 
-    // All six boxes flip to this when the code comes back wrong.
     final errorPinTheme = defaultPinTheme.copyDecorationWith(
       color: theme.colorScheme.onError, // --color-accent-2-100
       borderRadius: BorderRadius.circular(2.r),

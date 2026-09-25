@@ -54,7 +54,7 @@ class _SignInPhoneScreenState extends State<SignInPhoneScreen> {
       onSelect: (Country country) {
         setState(() {
           _selectedCountry = country;
-          _phoneController.clear(); // old digits no longer make sense
+          _phoneController.clear();
         });
       },
     );
@@ -66,7 +66,7 @@ class _SignInPhoneScreenState extends State<SignInPhoneScreen> {
       _selectedCountry.example.replaceAll(RegExp(r'\D'), '').length;
 
   String? get _phoneError {
-    if (_digitsOnly.isEmpty) return null; // don't error before typing
+    if (_digitsOnly.isEmpty) return null;
     if (_expectedDigits > 0 && _digitsOnly.length != _expectedDigits) {
       return 'That is not a complete ${_selectedCountry.name} mobile '
           'number. $_expectedDigits digits after the country code.';

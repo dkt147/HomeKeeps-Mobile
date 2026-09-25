@@ -364,7 +364,6 @@ class TodaysJobDetailScreen extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
               child: Column(
                 children: [
-                  // Secondary Action: Tell Her I'm On My Way
                   SizedBox(
                     width: double.infinity,
                     height: 50.h,

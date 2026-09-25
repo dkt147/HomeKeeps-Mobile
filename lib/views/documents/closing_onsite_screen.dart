@@ -91,7 +91,6 @@ class _ClosingOnSiteScreenState extends State<ClosingOnSiteScreen> {
                     ),
                     SizedBox(height: 20.h),
 
-                    // SECTION 1: WHAT HAPPENED
                     _sectionHeader('1 · WHAT HAPPENED', isCompleted: true),
                     SizedBox(height: 8.h),
 

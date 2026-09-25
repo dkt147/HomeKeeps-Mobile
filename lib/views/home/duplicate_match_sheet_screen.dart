@@ -3,10 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
-/// Call this to show the sheet. Resolves to:
-/// - true  -> user tapped "Yes, that's mine"
-/// - false -> user tapped "No, not mine"
-/// - null  -> dismissed without choosing
 Future<bool?> showDuplicateMatchSheet(
   BuildContext context, {
   required String applianceName, // "Samsung refrigerator"

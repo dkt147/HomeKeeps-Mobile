@@ -5,6 +5,7 @@ import 'package:home_keeps/data/network/network_api_service.dart';
 import 'package:home_keeps/models/document_model.dart';
 import 'package:home_keeps/models/home_summary_model.dart';
 import 'package:home_keeps/models/manufactures_model.dart';
+import 'package:home_keeps/models/offers_model.dart';
 import 'package:home_keeps/models/product_category_model.dart';
 import 'package:home_keeps/models/product_detail_model.dart';
 import 'package:home_keeps/models/product_model.dart';
@@ -170,5 +171,25 @@ class ProductRepo {
             }
           : {},
     );
+  }
+
+  Future<String> getDocumentUrl({required String documentId}) async {
+    final response = await _apiService.get(
+      "${AppUrl.documents}/$documentId/url",
+    );
+    return response['data']['url'] as String;
+  }
+
+  Future<OffersModel> getOffers({required String productId}) async {
+    final response = await _apiService.get(
+      "${AppUrl.productDetail}$productId/offers",
+    );
+
+    if (response is Map<String, dynamic>) {
+      return OffersModel.fromJson(response);
+    }
+
+    // Unexpected shape — treat as "no offers" instead of crashing
+    return OffersModel(data: null);
   }
 }

@@ -147,8 +147,6 @@ class AuthController extends BaseController {
       final result = await authRepo.updateConsents(consentMarketing: value);
 
       if (result["data"] != null) {
-        // Cache locally so re-opening this screen shows the real state
-        // instead of resetting to a hardcoded default.
         await LocalStorage.saveJson(key: _consentMarketingKey, value: value);
 
         handleSuccess(

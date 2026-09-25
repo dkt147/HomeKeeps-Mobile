@@ -10,16 +10,23 @@ import 'package:home_keeps/models/document_model.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PaperworkDocItem {
+  final String documentId;
   final IconData icon;
   final String title;
   final String meta;
+  final String mime;
 
   const PaperworkDocItem({
+    required this.documentId,
     required this.icon,
     required this.title,
     required this.meta,
+    required this.mime,
   });
 }
 
@@ -92,7 +99,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return s[0].toUpperCase() + s.substring(1);
   }
 
-  // Document type ka naam. Naye types yahan add kar sakte hain.
   String _typeLabel(String? type) {
     switch (type) {
       case 'invoice':
@@ -140,7 +146,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     return '${_months[d.month - 1]} ${d.year}';
   }
 
-  // Search: appliance ka naam, type, filename aur file type par
   bool _matches(AppDocument d, String q) {
     if (q.isEmpty) return true;
     final haystack = [
@@ -161,13 +166,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     ].where((e) => e.isNotEmpty).join(' · ');
 
     return PaperworkDocItem(
+      documentId: d.id.toString(),
       icon: _iconFor(d.type),
       title: _typeLabel(d.type),
       meta: meta,
+      mime: d.mime ?? '',
     );
   }
 
-  // Appliance ke hisaab se group (pehli baar aane ke tarteeb mein)
   List<ApplianceGroup> _buildGroups(List<AppDocument> docs) {
     final byProduct = <String, List<AppDocument>>{};
     final names = <String, String>{};
@@ -300,7 +306,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         for (final group in groups) _buildGroup(group),
-                        // Floating button ke neeche last item na chhupe
+
                         SizedBox(height: 70.h),
                       ],
                     );
@@ -453,8 +459,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                             items: products
                                 .map<DropdownMenuItem<String>>(
                                   (p) => DropdownMenuItem(
-                                    value:
-                                        p.id, // <- adjust field name if needed
+                                    value: p.id,
                                     child: Text(
                                       p.name ?? 'Unnamed',
                                     ), // <- adjust
@@ -675,7 +680,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () => _shareDocument(doc),
                   child: Icon(
                     Icons.share_outlined,
                     size: 18.sp,
@@ -688,6 +693,45 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         SizedBox(height: 22.h),
       ],
     );
+  }
+
+  Future<void> _shareDocument(PaperworkDocItem doc) async {
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      final url = await productController.getDocumentShareUrl(
+        documentId: doc.documentId,
+      );
+
+      if (url == null) {
+        Get.back();
+        Get.snackbar('Error', 'Could not get share link');
+        return;
+      }
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode != 200) {
+        Get.back();
+        Get.snackbar('Error', 'Could not download document');
+        return;
+      }
+
+      final dir = await getTemporaryDirectory();
+      final ext = _ext(doc.mime).toLowerCase();
+      final fileName = '${doc.title.replaceAll(' ', '_')}.$ext';
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(response.bodyBytes);
+
+      if (mounted) Get.back();
+
+      await Share.shareXFiles([XFile(file.path)]);
+    } catch (e) {
+      if (mounted) Get.back();
+      Get.snackbar('Error', 'Something went wrong');
+    }
   }
 }
 
@@ -752,7 +796,6 @@ class _AddDocumentDialogState extends State<_AddDocumentDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // NOTE: `p.id` / `p.name` ko apne asal ProductModel field names se match karein
     final products = widget.controller.productModel?.data ?? [];
 
     return AlertDialog(

@@ -33,7 +33,6 @@ class _AddApplianceMethodScreenState extends State<AddApplianceMethodScreen> {
     );
   }
 
-  // Category name se icon match — naya category type aaye to yahan add kar dein.
   String _iconForCategory(String? name) {
     final n = (name ?? '').toLowerCase();
     if (n.contains('wash')) return "assets/images/q-washer.png";
@@ -201,13 +200,12 @@ class _AddApplianceMethodScreenState extends State<AddApplianceMethodScreen> {
 
         final categories = controller.categoriesModel?.data ?? [];
 
-        // API list + hamesha "Something else" fallback aakhir mein
-        final itemCount = categories.length + 1;
+        // final itemCount = categories.length + 1;
 
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: itemCount,
+          itemCount: categories.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 10.w,
@@ -215,13 +213,13 @@ class _AddApplianceMethodScreenState extends State<AddApplianceMethodScreen> {
             childAspectRatio: 0.82,
           ),
           itemBuilder: (context, index) {
-            if (index == categories.length) {
-              return _buildCategoryCard(
-                title: 'Something else',
-                icon: AppAssets.horizontaldot,
-                onTap: () => _onSelectCategory(categoryName: 'Something else'),
-              );
-            }
+            // if (index == categories.length) {
+            //   return _buildCategoryCard(
+            //     title: 'Something else',
+            //     icon: AppAssets.horizontaldot,
+            //     onTap: () => _onSelectCategory(categoryName: 'Something else'),
+            //   );
+            // }
 
             final ProductCategory category = categories[index];
 

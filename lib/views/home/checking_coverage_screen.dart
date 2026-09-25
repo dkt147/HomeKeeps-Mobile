@@ -1,9 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:home_keeps/constants/text_styles.dart';
-import 'package:home_keeps/views/home/repair_covered_screen.dart';
 
 enum CoverageCheckStatus { done, pending }
 
@@ -97,11 +94,10 @@ class _CheckingCoverageScreenState extends State<CheckingCoverageScreen>
             children: [
               Spacer(),
 
-              // Shield glyph — pale accent tone, purely decorative here
               Icon(
                 Icons.shield_outlined,
                 size: 34.sp,
-                color: theme.colorScheme.tertiary, // --color-accent300
+                color: theme.colorScheme.tertiary,
               ),
               SizedBox(height: 16.h),
 
@@ -152,7 +148,6 @@ class _CheckingCoverageScreenState extends State<CheckingCoverageScreen>
 
               const Spacer(),
 
-              // Indeterminate progress sweep — navigation stays live behind it
               LayoutBuilder(
                 builder: (context, constraints) {
                   return Stack(

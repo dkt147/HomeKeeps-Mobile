@@ -4,10 +4,8 @@ import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/models/service_case_detail_model.dart';
-import 'package:home_keeps/models/service_case_model.dart';
 import 'package:home_keeps/views/services/case_timeline_screen.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
-import 'package:home_keeps/widgets/wallet_component.dart';
 
 class ServiceCasesScreen extends StatefulWidget {
   const ServiceCasesScreen({super.key});

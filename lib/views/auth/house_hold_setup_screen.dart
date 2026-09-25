@@ -20,7 +20,7 @@ class _HouseholdSetupScreenState extends State<HouseholdSetupScreen> {
   @override
   void initState() {
     super.initState();
-    // Rebuild so the button enables/disables as the name is typed.
+
     _nameController.addListener(() => setState(() {}));
   }
 

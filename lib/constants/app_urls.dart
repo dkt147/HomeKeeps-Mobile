@@ -16,4 +16,5 @@ class AppUrl {
   static const String serviceCases = "$baseUrl/service-cases";
   static const String documents = "$baseUrl/documents";
   static const String manufactures = '$baseUrl/products/manufacturers';
+  static const String productDetailextended = '$baseUrl/products';
 }

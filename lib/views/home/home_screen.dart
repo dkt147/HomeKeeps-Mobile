@@ -8,6 +8,7 @@ import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/data/response/status.dart';
 import 'package:home_keeps/views/home/add_appliance_screen.dart';
 import 'package:home_keeps/views/home/appliances_detail_screen.dart';
+import 'package:home_keeps/views/home/extended_cover_screen.dart';
 import 'package:home_keeps/views/home/out_of_cover_screen.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
@@ -489,8 +490,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   textcolor: Theme.of(context).colorScheme.primary,
                   width: 190.w,
                   onTap: () {
+                    final productId = warrantyCase?.product?.id;
+                    if (productId == null || productId.isEmpty) return;
+                    // Get.to(
+                    //   () => OutOfCoverScreen(),
+                    //   transition: Transition.rightToLeft,
+                    // );
                     Get.to(
-                      () => OutOfCoverScreen(),
+                      () => ExtendedCoverScreen(id: productId),
                       transition: Transition.rightToLeft,
                     );
                   },

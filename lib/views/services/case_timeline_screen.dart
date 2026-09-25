@@ -5,7 +5,7 @@ import 'package:home_keeps/constants/app_assets.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/models/service_case_detail_model.dart';
-import 'package:home_keeps/models/service_case_model.dart';
+
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
@@ -36,7 +36,6 @@ class CaseTimelineScreen extends StatefulWidget {
 class _CaseTimelineScreenState extends State<CaseTimelineScreen> {
   late final ProductController productController;
 
-  // Pehle frame par purana (kisi aur case ka) data na dikhe
   bool _started = false;
 
   static const _months = [
@@ -92,13 +91,11 @@ class _CaseTimelineScreenState extends State<CaseTimelineScreen> {
     return s[0].toUpperCase() + s.substring(1);
   }
 
-  // Lambi UUID ki jagah pehle 8 characters
   String _shortRef(String? id) {
     if (id == null || id.isEmpty) return '-';
     return (id.length > 8 ? id.substring(0, 8) : id).toUpperCase();
   }
 
-  // Status ke naam ka text. Apne hisaab se badal sakte hain.
   String _stepTitle(String? status) {
     switch (status) {
       case 'new':
@@ -114,7 +111,6 @@ class _CaseTimelineScreenState extends State<CaseTimelineScreen> {
     }
   }
 
-  // API ki timeline se steps: case_opened aur status_changed events
   List<CaseStep> _buildSteps(ServiceCaseModel c) {
     final events =
         c.timeline
