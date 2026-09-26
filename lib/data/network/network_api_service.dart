@@ -81,6 +81,7 @@ class NetworkApiService extends GetxService {
     switch (response.statusCode) {
       case 200:
       case 201:
+      case 202:
       case 204:
         return responseJson;
 

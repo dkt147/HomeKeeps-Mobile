@@ -65,7 +65,7 @@ class Offer {
   int? deductible;
   int? waitingPeriodDays;
   int? maxClaims;
-  int? termsVersion;
+  String? termsVersion;
   OfferTerms? terms;
   List<String>? exclusions;
   Eligibility? eligibility;

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 
 import 'package:home_keeps/views/home/ocr_review_screen.dart';
+import 'package:home_keeps/views/home/ocr_upload_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum CaptureType { invoice, label }
@@ -86,7 +87,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
       final file = await controller.takePicture();
       if (!mounted) return;
       Get.off(
-        () => OcrReviewScreen(
+        () => OcrUploadScreen(
           captureType: widget.captureType,
           imagePath: file.path,
         ),

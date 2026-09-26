@@ -17,4 +17,9 @@ class AppUrl {
   static const String documents = "$baseUrl/documents";
   static const String manufactures = '$baseUrl/products/manufacturers';
   static const String productDetailextended = '$baseUrl/products';
+
+  //OCR
+  static const String ocrJobs = '$baseUrl/ocr/jobs';
+  static const String ocrJobStatus = '$baseUrl/ocr/jobs';
+  static const String ocrJobConfirm = '$baseUrl/ocr/jobs';
 }
