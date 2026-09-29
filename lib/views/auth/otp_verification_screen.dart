@@ -11,9 +11,14 @@ import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  final String phoneNumber; // e.g. '+972501234567' (with country code)
+  final String phoneNumber;
+  final String? testOtp;
 
-  const OtpVerificationScreen({super.key, required this.phoneNumber});
+  const OtpVerificationScreen({
+    super.key,
+    required this.phoneNumber,
+    this.testOtp,
+  });
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -23,6 +28,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
   final AuthController controller = Get.find<AuthController>();
+  String? _testOtp;
 
   static const _resendSeconds = 47;
   int _secondsLeft = _resendSeconds;
@@ -34,6 +40,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   void initState() {
     super.initState();
+    _testOtp = widget.testOtp;
     _startTimer();
   }
 
@@ -65,10 +72,21 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       _isError = false;
       _attemptsLeft = 2;
     });
+
     _pinController.clear();
 
-    await controller.login(phone: widget.phoneNumber, navigateOnSuccess: false);
-    _startTimer();
+    final success = await controller.login(
+      phone: widget.phoneNumber,
+      navigateOnSuccess: false,
+    );
+
+    if (success) {
+      setState(() {
+        _testOtp = controller.testOtp;
+      });
+
+      _startTimer();
+    }
   }
 
   void _showWrongCodeError() {
@@ -217,6 +235,21 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ],
                 ),
               ),
+              if ((_testOtp ?? '').isNotEmpty) ...[
+                SizedBox(height: 12.h),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    'Test OTP: $_testOtp',
+                    style: AppTextStyles.semiBold,
+                  ),
+                ),
+              ],
 
               SizedBox(height: 30.h),
 

@@ -27,6 +27,9 @@ class AuthController extends BaseController {
 
   String _phone = '';
   String get phone => _phone;
+  String _testOtp = '';
+
+  String get testOtp => _testOtp;
 
   Future<bool> login({
     required String phone,
@@ -43,6 +46,8 @@ class AuthController extends BaseController {
 
       if (result["data"] != null) {
         final data = result["data"];
+        final String otp = data["otp"]?.toString() ?? "";
+        _testOtp = otp;
 
         handleSuccess(
           data["message"] ?? "OTP sent successfully!",
@@ -52,7 +57,7 @@ class AuthController extends BaseController {
         success = true;
 
         if (navigateOnSuccess) {
-          Get.to(() => OtpVerificationScreen(phoneNumber: phone));
+          Get.to(() => OtpVerificationScreen(phoneNumber: phone, testOtp: otp));
         }
       } else {
         handleError(result["message"] ?? "Failed to send OTP");
