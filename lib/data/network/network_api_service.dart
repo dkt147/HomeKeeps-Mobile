@@ -287,6 +287,28 @@ class NetworkApiService extends GetxService {
     });
   }
 
+  Future<dynamic> postWithHeaders(
+    String url,
+    dynamic data, {
+    Map<String, String>? extraHeaders,
+  }) async {
+    Utils.logInfo("data $data");
+
+    return _sendRequest(() async {
+      final headers = await _defaultHeaders();
+
+      if (extraHeaders != null) {
+        headers.addAll(extraHeaders);
+      }
+
+      return http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(data),
+      );
+    });
+  }
+
   Future<dynamic> put(String url, dynamic data) async {
     return _sendRequest(() async {
       final headers = await _defaultHeaders();

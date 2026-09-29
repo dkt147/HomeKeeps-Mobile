@@ -3,12 +3,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:home_keeps/constants/app_assets.dart';
 import 'package:home_keeps/constants/text_styles.dart';
+import 'package:home_keeps/controller/navigation_controller.dart';
 import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/data/response/status.dart';
 import 'package:home_keeps/models/offers_model.dart';
+import 'package:home_keeps/repository/check_out_repo.dart';
+import 'package:home_keeps/utils/utils.dart';
+import 'package:home_keeps/views/auth/navigator_screen.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
-import 'package:intl/intl.dart';
+import 'package:home_keeps/widgets/web_view_screen.dart';
 
 class ExtendedCoverScreen extends StatefulWidget {
   final String id;
@@ -21,6 +25,15 @@ class ExtendedCoverScreen extends StatefulWidget {
 
 class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
   late final ProductController productController;
+  final CheckoutRepo checkoutRepo = CheckoutRepo();
+
+  bool _termsAccepted = false;
+  bool _isCheckingOut = false;
+  bool _initialized = false;
+  int _selectedIndex = 0;
+  Offer? _selectedOffer;
+
+  static const Color _cardColor = Color(0xff292C47);
 
   @override
   void initState() {
@@ -32,43 +45,95 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
       productController = Get.put(ProductController());
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      productController.getProductDetail(id: widget.id);
-      productController.getOffers(productId: widget.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await Future.wait([
+          Future.sync(() => productController.getProductDetail(id: widget.id)),
+          Future.sync(() => productController.getOffers(productId: widget.id)),
+        ]);
+      } catch (e) {
+        debugPrint('ExtendedCoverScreen load error: $e');
+      } finally {
+        if (mounted) setState(() => _initialized = true);
+      }
     });
   }
 
-  int _selectedIndex = 1;
+  double _priceInMajor(Offer? offer) {
+    if (offer == null) return 0;
+    final num raw = offer.price ?? 0;
+    return raw / 100;
+  }
 
-  final List<Map<String, dynamic>> _durationOptions = [
-    {'years': 2, 'monthlyPrice': 22, 'totalPrice': 528, 'badge': null},
-    {
-      'years': 3,
-      'monthlyPrice': 19,
-      'totalPrice': 690,
-      'badge': 'MOST TAKE THIS',
-    },
-    {'years': 5, 'monthlyPrice': 17, 'totalPrice': 1020, 'badge': null},
-  ];
+  String _fmt(double v) {
+    if (v == v.roundToDouble()) return v.toInt().toString();
+    return v.toStringAsFixed(2);
+  }
+
+  int _monthsOf(Offer? offer) => offer?.durationMonths ?? 0;
+
+  String _durationLabel(int months) {
+    if (months > 0 && months % 12 == 0) {
+      final y = months ~/ 12;
+      return '$y year${y == 1 ? '' : 's'}';
+    }
+    return '$months month${months == 1 ? '' : 's'}';
+  }
+
+  Future<void> _onCheckout() async {
+    final offer = _selectedOffer;
+    if (offer == null || !_termsAccepted || _isCheckingOut) return;
+
+    final planId = offer.planId ?? offer.id;
+    if (planId == null) {
+      Utils.errorBar("This plan can't be checked out right now.");
+      return;
+    }
+
+    setState(() => _isCheckingOut = true);
+
+    try {
+      final result = await checkoutRepo.checkoutOffer(
+        planId: planId,
+        productId: widget.id,
+      );
+
+      final data = result["data"];
+      final redirectUrl = data?["payment_session"]?["redirect_url"];
+
+      if (!mounted) return;
+
+      if (redirectUrl != null && redirectUrl.toString().isNotEmpty) {
+        Get.to(
+          () => InAppWebViewScreen(
+            gameUrl: redirectUrl.toString(),
+            gameTitle: "Card Authentication",
+            forcePortrait: true,
+            enableWebViewHistory: false,
+            onExit: () {
+              final navigationController = Get.find<NavigationController>();
+              navigationController.selectIndex(0);
+              Get.offAll(
+                () => const NavigatorScreen(),
+                transition: Transition.rightToLeft,
+              );
+            },
+          ),
+        );
+      } else {
+        Utils.errorBar(result["message"] ?? 'Please try again.');
+      }
+    } catch (e) {
+      Utils.errorBar(e.toString());
+    } finally {
+      if (mounted) setState(() => _isCheckingOut = false);
+    }
+  }
+
+  // ---------- Build ----------
 
   @override
   Widget build(BuildContext context) {
-    final selectedOption = _durationOptions[_selectedIndex];
-    // final years = selectedOption['years'] as int;
-    // final monthlyPrice = selectedOption['monthlyPrice'] as int;
-    // final totalPrice = selectedOption['totalPrice'] as int;
-    final offersData = productController.offersModel?.data;
-    final offers = offersData?.offers ?? [];
-    final hasOffers = offersData?.isAvailable ?? false;
-
-    final Offer? selectedOffer = hasOffers && _selectedIndex < offers.length
-        ? offers[_selectedIndex]
-        : null;
-    final years = selectedOffer?.years ?? 0;
-    final monthlyPrice = selectedOffer?.monthlyPrice.round() ?? 0;
-    final totalPrice = selectedOffer?.priceInCurrency.round() ?? 0;
-    final currency = selectedOffer?.currency ?? 'ILS';
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: SafeArea(
@@ -77,6 +142,30 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
             if (controller.apiResponse.status == Status.loading) {
               return _buildSkeleton();
             }
+
+            // ✅ Saara data GetBuilder ke andar, taake update() par fresh ho
+            final rawOffersData = controller.offersModel?.data;
+            final isStaleData =
+                rawOffersData != null && rawOffersData.productId != widget.id;
+            final offersData = isStaleData ? null : rawOffersData;
+            final List<Offer> offers = offersData?.offers ?? <Offer>[];
+            final hasOffers = offers.isNotEmpty;
+
+            final effectiveSelectedIndex = _selectedIndex < offers.length
+                ? _selectedIndex
+                : 0;
+            final Offer? selectedOffer = hasOffers
+                ? offers[effectiveSelectedIndex]
+                : null;
+            _selectedOffer = selectedOffer;
+
+            final months = _monthsOf(selectedOffer);
+            final totalPrice = _priceInMajor(selectedOffer);
+            final currency = selectedOffer?.currency ?? 'ILS';
+            final durationText = _durationLabel(months);
+
+            final showOffersSkeleton =
+                !_initialized || controller.isOffersLoading || isStaleData;
 
             final data = controller.productDetailModel?.data;
             final warranty = data?.warranty;
@@ -88,6 +177,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Back button
                   Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: 20.w,
@@ -117,7 +207,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                   ),
                   SizedBox(height: 20.h),
 
-                  // Header Section with Appliance Illustration Placeholder
+                  // Header
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,8 +224,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                               Text(
                                 isCovered
                                     ? '$daysLeft DAYS OF COVER LEFT'
-                                          .toUpperCase()
-                                    : 'NOT CURRENTLY COVERED'.toUpperCase(),
+                                    : 'NOT CURRENTLY COVERED',
                                 style: AppTextStyles.medium2.copyWith(
                                   color: Theme.of(
                                     context,
@@ -171,64 +260,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Builder(
-                          builder: (context) {
-                            final status = warranty?.status;
-                            final message = warranty?.message;
-
-                            if (message == null || message.isEmpty) {
-                              return const SizedBox.shrink();
-                            }
-
-                            if (status == 'covered') {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "WHAT'S COVERED",
-                                    style: AppTextStyles.medium2.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondary,
-                                    ),
-                                  ),
-                                  10.verticalSpace,
-                                  _messageCard(
-                                    message: message,
-                                    icon: Icons.check_circle_outline,
-                                    iconColor: Theme.of(
-                                      context,
-                                    ).colorScheme.onSecondary,
-                                  ),
-                                ],
-                              );
-                            }
-
-                            if (status == 'uncovered') {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "WHAT'S NOT",
-                                    style: AppTextStyles.medium2.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondary,
-                                    ),
-                                  ),
-                                  10.verticalSpace,
-                                  _messageCard(
-                                    message: message,
-                                    icon: Icons.cancel_outlined,
-                                    iconColor: const Color(0xFF9099CF),
-                                  ),
-                                ],
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          },
-                        ),
+                        _buildWarrantyMessage(warranty),
                         SizedBox(height: 14.h),
                         Text(
                           'Deliberately in front of the price. It\'s what stops arguments after the first call-out.',
@@ -244,7 +276,9 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                           ),
                         ),
                         SizedBox(height: 12.h),
-                        if (controller.isOffersLoading)
+
+                        // Offers area
+                        if (showOffersSkeleton)
                           Row(
                             children: List.generate(
                               2,
@@ -267,7 +301,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                             width: double.infinity,
                             padding: EdgeInsets.all(18.w),
                             decoration: BoxDecoration(
-                              color: Color(0xff292C47),
+                              color: _cardColor,
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Text(
@@ -284,14 +318,18 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                           Row(
                             children: List.generate(offers.length, (index) {
                               final offer = offers[index];
-                              final isSelected = _selectedIndex == index;
+                              final isSelected =
+                                  effectiveSelectedIndex == index;
+                              final offerMonths = _monthsOf(offer);
+                              final offerTotal = _priceInMajor(offer);
+                              final perMonth = offerMonths > 0
+                                  ? (offerTotal / offerMonths).round()
+                                  : 0;
 
                               return Expanded(
                                 child: GestureDetector(
                                   onTap: () {
-                                    setState(() {
-                                      _selectedIndex = index;
-                                    });
+                                    setState(() => _selectedIndex = index);
                                   },
                                   child: Container(
                                     margin: EdgeInsets.only(
@@ -306,13 +344,13 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? Colors.white
-                                          : Color(0xff292C47),
+                                          : _cardColor,
                                       borderRadius: BorderRadius.circular(18.r),
                                     ),
                                     child: Column(
                                       children: [
                                         Text(
-                                          '${offer.years} year${offer.years == 1 ? '' : 's'}',
+                                          _durationLabel(offerMonths),
                                           style: AppTextStyles.semiBold
                                               .copyWith(
                                                 fontSize: 13.sp,
@@ -327,20 +365,20 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                                               ),
                                         ),
                                         SizedBox(height: 4.h),
-                                        Text(
-                                          '${offer.monthlyPrice.round()}',
-                                          style: AppTextStyles.semiBold
-                                              .copyWith(
-                                                fontWeight: FontWeight.w900,
-                                                color: isSelected
-                                                    ? Theme.of(
-                                                        context,
-                                                      ).colorScheme.primary
-                                                    : Theme.of(
-                                                        context,
-                                                      ).colorScheme.onPrimary,
-                                              ),
-                                        ),
+                                        // Text(
+                                        //   '$perMonth',
+                                        //   style: AppTextStyles.semiBold
+                                        //       .copyWith(
+                                        //         fontWeight: FontWeight.w900,
+                                        //         color: isSelected
+                                        //             ? Theme.of(
+                                        //                 context,
+                                        //               ).colorScheme.primary
+                                        //             : Theme.of(
+                                        //                 context,
+                                        //               ).colorScheme.onPrimary,
+                                        //       ),
+                                        // ),
                                         Text(
                                           '${offer.currency ?? 'ILS'} a month',
                                           style: AppTextStyles.small.copyWith(
@@ -357,23 +395,21 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                             }),
                           ),
                         SizedBox(height: 16.h),
+
+                        // Summary card
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.all(18.w),
                           decoration: BoxDecoration(
-                            color: Color(0xff292C47),
+                            color: _cardColor,
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Column(
                             children: [
                               _summaryRow(
-                                'Cover starts',
-                                formatDate(warranty?.startDate).isEmpty
-                                    ? '-'
-                                    : formatDate(warranty?.startDate),
+                                'Duration',
+                                selectedOffer != null ? '$months months' : '-',
                               ),
-                              _summaryRow('First 30 days', 'Waiting period'),
-                              _summaryRow('You pay per repair', 'ILS 0'),
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8.h),
                                 child: Divider(
@@ -384,8 +420,12 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                                 ),
                               ),
                               _summaryRow(
-                                'Total for $years years',
-                                'ILS $totalPrice',
+                                selectedOffer != null
+                                    ? 'Total for $durationText'
+                                    : 'Total',
+                                selectedOffer != null
+                                    ? '$currency ${_fmt(totalPrice)}'
+                                    : '-',
                                 isBold: true,
                               ),
                               SizedBox(height: 8.h),
@@ -440,29 +480,89 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                   ),
 
                   SizedBox(height: 16.h),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
-                    child: PrimaryButton(
-                      onTap: selectedOffer == null
-                          ? null
-                          : () {
-                              // if (widget.onContinueTap != null) {
-                              //   widget.onContinueTap!(years, monthlyPrice, totalPrice);
-                              // }
-                            },
-                      title: selectedOffer == null
-                          ? 'No plans available'
-                          : 'Continue · $currency $totalPrice for $years years',
-                      bg: Theme.of(context).colorScheme.onPrimary,
-                      textcolor: Theme.of(context).colorScheme.onPrimaryFixed,
+
+                  // Terms + Continue sirf tab jab offers hon
+                  if (!showOffersSkeleton && hasOffers) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 24.w,
+                            height: 24.w,
+                            child: Checkbox(
+                              value: _termsAccepted,
+                              onChanged: (value) {
+                                setState(() => _termsAccepted = value ?? false);
+                              },
+                              side: const BorderSide(
+                                color: Colors.grey,
+                                width: 1.5,
+                              ),
+                              checkColor: Colors.blue,
+                              fillColor: WidgetStateProperty.all<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(
+                                () => _termsAccepted = !_termsAccepted,
+                              ),
+                              child: Text(
+                                'Terms accepted',
+                                style: AppTextStyles.small.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    SizedBox(height: 8.h),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
+                      child: Builder(
+                        builder: (context) {
+                          final isDisabled =
+                              selectedOffer == null ||
+                              !_termsAccepted ||
+                              _isCheckingOut;
+
+                          return PrimaryButton(
+                            onTap: isDisabled ? null : _onCheckout,
+                            title: _isCheckingOut
+                                ? 'Please wait…'
+                                : 'Continue · $currency ${_fmt(totalPrice)} for $durationText',
+                            bg: isDisabled
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary.withOpacity(0.35)
+                                : Theme.of(context).colorScheme.onPrimary,
+                            textcolor: isDisabled
+                                ? Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryFixed.withOpacity(0.6)
+                                : Theme.of(context).colorScheme.onPrimaryFixed,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                   Center(
-                    child: Text(
-                      'Maybe later',
-                      style: AppTextStyles.semiBold.copyWith(
-                        fontSize: 15.sp,
-                        color: Theme.of(context).colorScheme.onSecondary,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).maybePop(),
+                      child: Text(
+                        'Maybe later',
+                        style: AppTextStyles.semiBold.copyWith(
+                          fontSize: 15.sp,
+                          color: Theme.of(context).colorScheme.onSecondary,
+                        ),
                       ),
                     ),
                   ),
@@ -476,20 +576,70 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
     );
   }
 
+  // ---------- Widgets ----------
+
+  Widget _buildWarrantyMessage(dynamic warranty) {
+    final status = warranty?.status;
+    final message = warranty?.message;
+
+    if (message == null || message.toString().isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (status == 'covered') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "WHAT'S COVERED",
+            style: AppTextStyles.medium2.copyWith(
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
+          ),
+          10.verticalSpace,
+          _messageCard(
+            message: message.toString(),
+            icon: Icons.check_circle_outline,
+            iconColor: Theme.of(context).colorScheme.onSecondary,
+          ),
+        ],
+      );
+    }
+
+    if (status == 'uncovered') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "WHAT'S NOT",
+            style: AppTextStyles.medium2.copyWith(
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
+          ),
+          10.verticalSpace,
+          _messageCard(
+            message: message.toString(),
+            icon: Icons.cancel_outlined,
+            iconColor: const Color(0xFF9099CF),
+          ),
+        ],
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
   Widget _buildSkeleton() {
     return SingleChildScrollView(
       physics: const NeverScrollableScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Back row placeholder
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             child: AppSkeleton(width: 70.w, height: 18.h),
           ),
           SizedBox(height: 20.h),
-
-          // Header + illustration placeholder
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -522,23 +672,17 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
             ],
           ),
           SizedBox(height: 28.h),
-
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // WHAT'S COVERED / NOT card placeholder
                 AppSkeleton(width: 130.w, height: 12.h),
                 10.verticalSpace,
                 AppSkeleton(width: double.infinity, height: 70.h, radius: 20),
                 SizedBox(height: 24.h),
-
-                // HOW LONG FOR label
                 AppSkeleton(width: 120.w, height: 12.h),
                 SizedBox(height: 12.h),
-
-                // Duration cards row
                 Row(
                   children: List.generate(3, (index) {
                     return Expanded(
@@ -554,12 +698,8 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                   }),
                 ),
                 SizedBox(height: 16.h),
-
-                // Summary card placeholder
                 AppSkeleton(width: double.infinity, height: 160.h, radius: 20),
                 SizedBox(height: 18.h),
-
-                // Lock note placeholder
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -580,10 +720,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
               ],
             ),
           ),
-
           SizedBox(height: 16.h),
-
-          // CTA button placeholder
           Padding(
             padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
             child: AppSkeleton(
@@ -601,16 +738,6 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
     );
   }
 
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return '';
-    try {
-      final parsedDate = DateTime.parse(date);
-      return DateFormat('dd MMM yyyy').format(parsedDate);
-    } catch (e) {
-      return '';
-    }
-  }
-
   Widget _messageCard({
     required String message,
     required IconData icon,
@@ -620,7 +747,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(18.w),
       decoration: BoxDecoration(
-        color: Color(0xff292C47),
+        color: _cardColor,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
@@ -633,45 +760,6 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
               message,
               style: AppTextStyles.small.copyWith(
                 color: Theme.of(context).colorScheme.onPrimary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoCard({
-    required List<String> items,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(18.w),
-      decoration: BoxDecoration(
-        color: Color(0xff292C47),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...items.map(
-            (item) => Padding(
-              padding: EdgeInsets.only(bottom: 10.h),
-              child: Row(
-                children: [
-                  Icon(icon, size: 18.sp, color: iconColor),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: AppTextStyles.small.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
@@ -696,6 +784,7 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
             value,
             style: AppTextStyles.semiBold.copyWith(
               fontSize: 12.sp,
+              fontWeight: isBold ? FontWeight.w800 : null,
               color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),

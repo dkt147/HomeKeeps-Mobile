@@ -22,4 +22,5 @@ class AppUrl {
   static const String ocrJobs = '$baseUrl/ocr/jobs';
   static const String ocrJobStatus = '$baseUrl/ocr/jobs';
   static const String ocrJobConfirm = '$baseUrl/ocr/jobs';
+  static String get offersCheckout => '$baseUrl/offers';
 }
