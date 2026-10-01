@@ -10,6 +10,7 @@ import 'package:home_keeps/models/product_category_model.dart';
 import 'package:home_keeps/models/product_detail_model.dart';
 import 'package:home_keeps/models/product_model.dart';
 import 'package:home_keeps/models/service_case_detail_model.dart';
+import 'package:home_keeps/models/store_model.dart';
 import 'package:home_keeps/models/warranty_cases_model.dart';
 import 'package:home_keeps/repository/product_repo.dart';
 
@@ -44,6 +45,9 @@ class ProductController extends BaseController {
   bool categoriesError = false;
   bool isUpdatingProduct = false;
   ManufacturesModel? manufacturersModel;
+  StoresModel? storesModel;
+  bool isStoresLoading = false;
+  bool storesError = false;
   bool isManufacturersLoading = true;
   bool manufacturersError = false;
   bool get warrantyReminderEnabled =>
@@ -384,6 +388,22 @@ class ProductController extends BaseController {
     }
   }
 
+  Future<void> getStores() async {
+    try {
+      isStoresLoading = true;
+      storesError = false;
+      update();
+
+      storesModel = await productRepo.getStores();
+    } catch (e) {
+      storesError = true;
+      handleError(e.toString());
+    } finally {
+      isStoresLoading = false;
+      update();
+    }
+  }
+
   Future<bool> createProduct({
     required String categoryId,
     required String manufacturerId,
@@ -391,6 +411,7 @@ class ProductController extends BaseController {
     required String purchasePrice,
     required String deliveryDate,
     required String serialNumber,
+    required String storeId,
     File? photo,
   }) async {
     if (isCreatingProduct) return false;
@@ -406,6 +427,7 @@ class ProductController extends BaseController {
         purchasePrice: purchasePrice,
         deliveryDate: deliveryDate,
         serialNumber: serialNumber,
+        storeId: storeId,
         photo: photo,
       );
 

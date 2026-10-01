@@ -288,7 +288,56 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     }
 
                     if (controller.documents.isEmpty) {
-                      return _emptyText('No documents yet');
+                      return SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: Center(
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.w,
+                              vertical: 30.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.description_outlined,
+                                  size: 40.sp,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondary,
+                                ),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  'No documents found',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.semiBold.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'You don’t have any documents added yet.',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.small.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
                     }
 
                     final filtered = controller.documents

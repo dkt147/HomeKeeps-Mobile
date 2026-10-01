@@ -238,13 +238,43 @@ class _ServiceCasesScreenState extends State<ServiceCasesScreen> {
   }
 
   Widget _emptyText(String text) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10.h),
-      child: Text(
-        text,
-        style: AppTextStyles.small.copyWith(
-          color: Theme.of(context).colorScheme.onSecondary,
-        ),
+    final theme = Theme.of(context);
+    final bool isOpen = text.toLowerCase().contains('open');
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 26.h),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.onPrimary,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            isOpen ? Icons.build_circle_outlined : Icons.check_circle_outline,
+            size: 40.sp,
+            color: theme.colorScheme.onSecondary,
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.semiBold.copyWith(
+              color: theme.colorScheme.primary,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            isOpen
+                ? 'You don’t have any open service cases.'
+                : 'You don’t have any closed service cases yet.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.small.copyWith(
+              color: theme.colorScheme.onSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

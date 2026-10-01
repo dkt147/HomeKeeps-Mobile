@@ -11,6 +11,7 @@ import 'package:home_keeps/models/product_detail_model.dart';
 import 'package:home_keeps/models/product_model.dart';
 import 'package:home_keeps/models/service_case_detail_model.dart';
 import 'package:home_keeps/models/service_case_model.dart';
+import 'package:home_keeps/models/store_model.dart';
 import 'package:home_keeps/models/warranty_cases_model.dart';
 
 class ProductRepo {
@@ -134,6 +135,12 @@ class ProductRepo {
     return ManufacturesModel.fromJson(response);
   }
 
+  Future<StoresModel> getStores() async {
+    final response = await _apiService.get(AppUrl.getStore);
+
+    return StoresModel.fromJson(response);
+  }
+
   Future<void> updateProduct({
     required String id,
     required String model,
@@ -153,6 +160,7 @@ class ProductRepo {
     required String purchasePrice,
     required String deliveryDate,
     required String serialNumber,
+    required String storeId,
     File? photo,
   }) async {
     await _apiService.postMultipart(
@@ -164,6 +172,7 @@ class ProductRepo {
         "purchase_price": purchasePrice,
         "delivery_date": deliveryDate,
         "serial_number": serialNumber,
+        'store_id': storeId,
       },
       files: photo != null
           ? {

@@ -1,5 +1,6 @@
 class AppUrl {
-  static const String baseUrl = 'https://homekeep-backend-x07s.onrender.com/v1';
+  // static const String baseUrl = 'https://homekeep-backend-x07s.onrender.com/v1';
+  static const String baseUrl = 'https://api.homekeep.carvoai.com/v1';
 
   static const String login = '$baseUrl/auth/otp/request';
   static const String refresh = "$baseUrl/auth/refresh";
@@ -16,6 +17,7 @@ class AppUrl {
   static const String serviceCases = "$baseUrl/service-cases";
   static const String documents = "$baseUrl/documents";
   static const String manufactures = '$baseUrl/products/manufacturers';
+  static const String getStore = '$baseUrl/admin/stores/user';
   static const String productDetailextended = '$baseUrl/products';
 
   //OCR

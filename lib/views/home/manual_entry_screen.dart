@@ -35,11 +35,14 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
   DateTime? _purchaseDate;
 
-  // manufacturer name -> id, dropdown text-based hai is liye lookup rakha hai
   final Map<String, String> _manufacturerNameToId = {};
   String? _selectedManufacturerName;
   String? get _selectedManufacturerId =>
       _manufacturerNameToId[_selectedManufacturerName];
+  final Map<String, String> _storeNameToId = {};
+  String? _selectedStoreName;
+
+  String? get _selectedStoreId => _storeNameToId[_selectedStoreName];
 
   PlatformFile? _pickedPhoto;
 
@@ -50,9 +53,10 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
         ? Get.find<ProductController>()
         : Get.put(ProductController());
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => productController.getManufacturers(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      productController.getManufacturers();
+      productController.getStores();
+    });
   }
 
   @override
@@ -60,7 +64,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
     _manufacturerController.dispose();
     _modelController.dispose();
     _priceController.dispose();
-    _storeController.dispose();
+
     _serialController.dispose();
     super.dispose();
   }
@@ -105,6 +109,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
 
     final ok = await productController.createProduct(
       categoryId: widget.categoryId,
+      storeId: _selectedStoreId!,
       manufacturerId: _selectedManufacturerId!,
       model: _modelController.text.trim(),
       purchasePrice: _priceController.text.trim(),
@@ -175,13 +180,11 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
               SizedBox(height: 25.h),
 
-              // Category — pichli screen se aa chuki hai, read-only dikha rahe hain
-              AppDropdownField(
+              AppFormField(
                 label: 'CATEGORY',
-                hint: 'Select appliance',
-                value: widget.categoryName,
-                items: [widget.categoryName],
-                onChanged: null, // disabled — already chosen
+                hint: 'Category',
+                displayValue: widget.categoryName,
+                readOnly: true,
               ),
               10.verticalSpace,
               Text(
@@ -265,25 +268,16 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               SizedBox(height: 20.h),
 
               // MANUFACTURER (free text) / MODEL
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: AppFormField(
-                      label: 'MANUFACTURER',
-                      hint: 'e.g. Bosch',
-                      controller: _manufacturerController,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: AppFormField(
-                      label: 'MODEL',
-                      hint: 'Model number',
-                      controller: _modelController,
-                    ),
-                  ),
-                ],
+              // AppFormField(
+              //   label: 'MANUFACTURER',
+              //   hint: 'e.g. Bosch',
+              //   controller: _manufacturerController,
+              // ),
+              // SizedBox(width: 12.w),
+              AppFormField(
+                label: 'MODEL',
+                hint: 'Model number',
+                controller: _modelController,
               ),
               SizedBox(height: 15.h),
 
@@ -293,7 +287,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
                 children: [
                   Expanded(
                     child: AppFormField(
-                      label: 'PURCHASE DATE',
+                      label: 'DELIEVERY DATE',
                       hint: 'DD.MM.YYYY',
                       displayValue: _formattedDate.isEmpty
                           ? null
@@ -320,11 +314,71 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
               ),
               SizedBox(height: 15.h),
 
-              // STORE
-              AppFormField(
-                label: 'STORE',
-                hint: 'Where you bought it',
-                controller: _storeController,
+              GetBuilder<ProductController>(
+                builder: (controller) {
+                  if (controller.isStoresLoading) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'STORE',
+                          style: AppTextStyles.medium2.copyWith(
+                            color: hintColor,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        AppSkeleton(
+                          width: double.infinity,
+                          height: 52.h,
+                          radius: 8,
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (controller.storesError) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Couldn't load stores",
+                            style: AppTextStyles.small.copyWith(
+                              color: theme.colorScheme.onSecondary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => controller.getStores(),
+                          child: const Text('Try again'),
+                        ),
+                      ],
+                    );
+                  }
+
+                  final stores = controller.storesModel?.data ?? [];
+
+                  _storeNameToId
+                    ..clear()
+                    ..addEntries(
+                      stores
+                          .where(
+                            (store) => store.id != null && store.name != null,
+                          )
+                          .map((store) => MapEntry(store.name!, store.id!)),
+                    );
+
+                  return AppDropdownField(
+                    label: 'STORE',
+                    hint: 'Where you bought it',
+                    value: _selectedStoreName,
+                    items: _storeNameToId.keys.toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStoreName = value;
+                      });
+                    },
+                  );
+                },
               ),
               SizedBox(height: 15.h),
 

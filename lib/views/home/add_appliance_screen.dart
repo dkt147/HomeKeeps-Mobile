@@ -199,6 +199,48 @@ class _AddApplianceMethodScreenState extends State<AddApplianceMethodScreen> {
         }
 
         final categories = controller.categoriesModel?.data ?? [];
+        if (categories.isEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 30.h),
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 26.h),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.category_outlined,
+                      size: 40.sp,
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'No categories available',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.semiBold.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'No categories are available at the moment.',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.small.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
 
         // final itemCount = categories.length + 1;
 

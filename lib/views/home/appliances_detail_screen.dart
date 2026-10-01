@@ -543,7 +543,8 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                               productController
                                       .productDetailModel
                                       ?.data
-                                      ?.store ??
+                                      ?.store
+                                      ?.name ??
                                   '-',
                             ),
                             _labelValueRow(

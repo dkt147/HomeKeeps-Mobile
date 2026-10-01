@@ -19,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController(
-    text: kDebugMode ? '3122694250' : '',
+    text: kDebugMode ? '500000001' : '',
   );
   final AuthController controller = Get.put(AuthController());
 

@@ -23,6 +23,7 @@ class ProductDetailData {
   String? serialNumber;
   dynamic purchasePrice;
   dynamic storeId;
+  Photo? photo;
   String? purchaseDate;
   dynamic deliveryDate;
   String? status;
@@ -40,7 +41,7 @@ class ProductDetailData {
 
   Category? category;
   Manufacturer? manufacturer;
-  dynamic store;
+  Store? store;
   Purchase? purchase;
   ManufacturerWarranty? manufacturerWarranty;
   List<ExtendedWarranty>? extendedWarranties;
@@ -59,6 +60,7 @@ class ProductDetailData {
     this.serialNumber,
     this.purchasePrice,
     this.storeId,
+    this.photo,
     this.purchaseDate,
     this.deliveryDate,
     this.status,
@@ -95,6 +97,7 @@ class ProductDetailData {
     serialNumber = json['serial_number'];
     purchasePrice = json['purchase_price'];
     storeId = json['store_id'];
+    photo = json['photo'] != null ? Photo.fromJson(json['photo']) : null;
     purchaseDate = json['purchase_date'];
     deliveryDate = json['delivery_date'];
     status = json['status'];
@@ -117,6 +120,7 @@ class ProductDetailData {
     manufacturer = json['manufacturer'] != null
         ? Manufacturer.fromJson(json['manufacturer'])
         : null;
+    store = json['store'] != null ? Store.fromJson(json['store']) : null;
 
     purchase = json['purchase'] != null
         ? Purchase.fromJson(json['purchase'])
@@ -168,6 +172,7 @@ class ProductDetailData {
       'serial_number': serialNumber,
       'purchase_price': purchasePrice,
       'store_id': storeId,
+      'photo': photo?.toJson(),
       'purchase_date': purchaseDate,
       'delivery_date': deliveryDate,
       'status': status,
@@ -184,6 +189,7 @@ class ProductDetailData {
       'name': name,
       'category': category?.toJson(),
       'manufacturer': manufacturer?.toJson(),
+      'store': store?.toJson(),
       'purchase': purchase?.toJson(),
       'manufacturer_warranty': manufacturerWarranty?.toJson(),
       'extended_warranties': extendedWarranties
@@ -247,20 +253,20 @@ class Manufacturer {
 class Purchase {
   String? date;
   dynamic price;
-  dynamic store;
+  Store? store;
 
   Purchase({this.date, this.price, this.store});
 
   Purchase.fromJson(Map<String, dynamic> json) {
     date = json['date'];
     price = json['price'];
-    store = json['store'];
+    store = json['store'] != null ? Store.fromJson(json['store']) : null;
   }
 
   Map<String, dynamic> toJson() => {
     'date': date,
     'price': price,
-    'store': store,
+    'store': store?.toJson(),
   };
 }
 
@@ -403,5 +409,64 @@ class DocumentModel {
     'ocr_status': ocrStatus,
     'created_at': createdAt,
     'updated_at': updatedAt,
+  };
+}
+
+class Store {
+  String? id;
+  String? name;
+  String? chain;
+  String? phone;
+
+  Store({this.id, this.name, this.chain, this.phone});
+
+  Store.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    chain = json['chain'];
+    phone = json['phone'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'chain': chain,
+    'phone': phone,
+  };
+}
+
+class Photo {
+  String? url;
+  String? expiresAt;
+  String? originalFilename;
+  String? mime;
+  int? sizeBytes;
+  String? uploadedAt;
+
+  Photo({
+    this.url,
+    this.expiresAt,
+    this.originalFilename,
+    this.mime,
+    this.sizeBytes,
+    this.uploadedAt,
+  });
+
+  Photo.fromJson(Map<String, dynamic> json) {
+    url = json['url'];
+    expiresAt = json['expires_at'];
+    originalFilename = json['original_filename'];
+    mime = json['mime'];
+    sizeBytes = json['size_bytes'];
+    uploadedAt = json['uploaded_at'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'url': url,
+    'expires_at': expiresAt,
+    'original_filename': originalFilename,
+    'mime': mime,
+    'size_bytes': sizeBytes,
+    'uploaded_at': uploadedAt,
   };
 }

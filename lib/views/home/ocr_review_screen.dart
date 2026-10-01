@@ -55,6 +55,10 @@ class _OcrReviewScreenState extends State<OcrReviewScreen> {
   final Map<String, String> _categoryNameToId = {};
   String? _selectedCategoryName;
   String? get _selectedCategoryId => _categoryNameToId[_selectedCategoryName];
+  final Map<String, String> _storeNameToId = {};
+  String? _selectedStoreName;
+
+  String? get _selectedStoreId => _storeNameToId[_selectedStoreName];
 
   @override
   void initState() {
@@ -69,6 +73,7 @@ class _OcrReviewScreenState extends State<OcrReviewScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       productController.getManufacturers();
       productController.getCategories();
+      productController.getStores();
     });
 
     final extracted = widget.job?.extracted;
@@ -149,6 +154,10 @@ class _OcrReviewScreenState extends State<OcrReviewScreen> {
       );
       return;
     }
+    if (_selectedStoreId == null) {
+      Get.snackbar('Select Store', 'Please choose a store before saving.');
+      return;
+    }
 
     setState(() => _isSaving = true);
 
@@ -161,7 +170,7 @@ class _OcrReviewScreenState extends State<OcrReviewScreen> {
       ),
       purchaseDate: _purchaseOnController.text.trim(),
       deliveryDate: _delievryOnController.text.trim(),
-      storeId: _whereFromController.text.trim(),
+      storeId: _selectedStoreId!,
       serialNumber: _serialNumber.text.trim(),
     );
 
@@ -465,9 +474,71 @@ class _OcrReviewScreenState extends State<OcrReviewScreen> {
                 controller: _serialNumber,
               ),
               SizedBox(height: 14.h),
-              _buildInputField(
-                label: 'Where from',
-                controller: _whereFromController,
+              GetBuilder<ProductController>(
+                builder: (controller) {
+                  if (controller.isStoresLoading) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Where from',
+                          style: AppTextStyles.small.copyWith(
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        AppSkeleton(
+                          width: double.infinity,
+                          height: 52.h,
+                          radius: 8,
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (controller.storesError) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Couldn't load stores",
+                            style: AppTextStyles.small.copyWith(
+                              color: Theme.of(context).colorScheme.onSecondary,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => controller.getStores(),
+                          child: const Text('Try again'),
+                        ),
+                      ],
+                    );
+                  }
+
+                  final stores = controller.storesModel?.data ?? [];
+
+                  _storeNameToId
+                    ..clear()
+                    ..addEntries(
+                      stores
+                          .where(
+                            (store) => store.id != null && store.name != null,
+                          )
+                          .map((store) => MapEntry(store.name!, store.id!)),
+                    );
+
+                  return AppDropdownField(
+                    label: 'STORE',
+                    hint: 'Where you bought it',
+                    value: _selectedStoreName,
+                    items: _storeNameToId.keys.toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStoreName = value;
+                      });
+                    },
+                  );
+                },
               ),
               SizedBox(height: 30.h),
               PrimaryButton(
