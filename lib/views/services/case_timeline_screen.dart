@@ -176,6 +176,35 @@ class _CaseTimelineScreenState extends State<CaseTimelineScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leadingWidth: 100.w,
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).maybePop(),
+          child: Padding(
+            padding: EdgeInsets.only(left: 16.w),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.close,
+                  size: 18.sp,
+                  color: Theme.of(context).colorScheme.onPrimaryFixed,
+                ),
+                SizedBox(width: 4.w),
+                Text(
+                  'Cancel',
+                  style: AppTextStyles.semiBold.copyWith(
+                    fontSize: 15.sp,
+                    color: Theme.of(context).colorScheme.onPrimaryFixed,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: GetBuilder<ProductController>(
           builder: (controller) {

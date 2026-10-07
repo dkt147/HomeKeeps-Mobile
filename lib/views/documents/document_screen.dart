@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
 import 'package:home_keeps/controller/product_controller.dart';
 import 'package:home_keeps/models/document_model.dart';
+import 'package:home_keeps/utils/utils.dart';
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 import 'package:file_picker/file_picker.dart';
@@ -102,7 +103,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   String _typeLabel(String? type) {
     switch (type) {
       case 'invoice':
-        return 'Receipt';
+        return 'Invoice';
       case 'label':
         return 'Label';
       default:
@@ -140,10 +141,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   // Sep 2026
-  String _monthYear(String? iso) {
+  String _dateTime(String? iso) {
     final d = DateTime.tryParse(iso ?? '')?.toLocal();
     if (d == null) return '';
-    return '${_months[d.month - 1]} ${d.year}';
+
+    final hour12 = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    final minute = d.minute.toString().padLeft(2, '0');
+    final period = d.hour >= 12 ? 'PM' : 'AM';
+
+    return '${_months[d.month - 1]} ${d.day}, ${d.year}, $hour12:$minute $period';
   }
 
   bool _matches(AppDocument d, String q) {
@@ -162,7 +168,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final meta = [
       _ext(d.mime),
       _fmtSize(d.sizeBytes),
-      _monthYear(d.createdAt),
+      _dateTime(d.createdAt),
     ].where((e) => e.isNotEmpty).join(' · ');
 
     return PaperworkDocItem(
@@ -418,10 +424,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
             if (selectedType == null ||
                 selectedProductId == null ||
                 pickedFile?.path == null) {
-              Get.snackbar(
-                'Missing info',
-                'Type, appliance aur file select karein',
-              );
+              Utils.errorBar('Please select file');
               return;
             }
 
@@ -435,6 +438,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
 
             if (ok) {
               Get.back();
+              await _load(silent: true);
             } else {
               setState(() => isSubmitting = false);
             }

@@ -55,7 +55,6 @@ class _ServiceCasesScreenState extends State<ServiceCasesScreen> {
     return s[0].toUpperCase() + s.substring(1);
   }
 
-  // Lambi UUID ki jagah pehle 8 characters
   String _shortRef(String? id) {
     if (id == null || id.isEmpty) return '-';
     return (id.length > 8 ? id.substring(0, 8) : id).toUpperCase();
