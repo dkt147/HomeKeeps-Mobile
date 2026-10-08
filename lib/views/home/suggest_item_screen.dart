@@ -225,7 +225,7 @@ class _SuggestedItemsScreenState extends State<SuggestedItemsScreen> {
               color: isSelected
                   ? Theme.of(
                       context,
-                    ).colorScheme.onPrimaryFixed.withOpacity(0.15)
+                    ).colorScheme.onPrimaryFixed.withValues(alpha: 0.15)
                   : Colors.transparent,
               width: 1.5,
             ),

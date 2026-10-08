@@ -98,16 +98,16 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen>
     ]);
   }
 
-  void _toggleFullscreen() {
-    setState(() {
-      _isFullscreen = !_isFullscreen;
-    });
-    if (_isFullscreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
-  }
+  // void _toggleFullscreen() {
+  //   setState(() {
+  //     _isFullscreen = !_isFullscreen;
+  //   });
+  //   if (_isFullscreen) {
+  //     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  //   } else {
+  //     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  //   }
+  // }
 
   // Pause all media when navigating away
   // void _pauseAllMedia() {
@@ -232,8 +232,9 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen>
       controller.addJavaScriptChannel(
         'FlutterBridge', // ← CHANGE THIS
         onMessageReceived: (JavaScriptMessage msg) {
-          if (kDebugMode)
+          if (kDebugMode) {
             print('📨 JS Channel [TellerConnect]: ${msg.message}');
+          }
           widget.onJsMessage?.call(msg.message);
         },
       );

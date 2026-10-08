@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:home_keeps/constants/text_styles.dart';
-import 'package:home_keeps/views/services/case_timeline_screen.dart';
 import 'package:home_keeps/widgets/app_form_field.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
-import 'package:home_keeps/widgets/wallet_component.dart';
 
 class TimeSlot {
   final String day;

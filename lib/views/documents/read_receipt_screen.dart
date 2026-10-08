@@ -240,7 +240,7 @@ class _ReadReceiptScreenState extends State<ReadReceiptScreen> {
                         color: Theme.of(context).colorScheme.onPrimary,
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
-                          color: const Color(0xFF333B76).withOpacity(0.2),
+                          color: const Color(0xFF333B76).withValues(alpha: 0.2),
                           width: 1.2,
                         ),
                       ),

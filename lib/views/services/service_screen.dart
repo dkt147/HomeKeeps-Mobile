@@ -99,43 +99,43 @@ class _ServiceCasesScreenState extends State<ServiceCasesScreen> {
     }
   }
 
-  List<CaseStep> _buildSteps(ServiceCaseModel c) {
-    final closed = c.isClosed;
-    final reached = closed
-        ? 4
-        : (c.scheduledAt != null ? 3 : (c.technicianName != null ? 2 : 1));
+  // List<CaseStep> _buildSteps(ServiceCaseModel c) {
+  //   final closed = c.isClosed;
+  //   final reached = closed
+  //       ? 4
+  //       : (c.scheduledAt != null ? 3 : (c.technicianName != null ? 2 : 1));
 
-    CaseStepStatus statusOf(int i) {
-      if (i < reached) return CaseStepStatus.done;
-      if (i == reached) return CaseStepStatus.current;
-      return CaseStepStatus.future;
-    }
+  //   CaseStepStatus statusOf(int i) {
+  //     if (i < reached) return CaseStepStatus.done;
+  //     if (i == reached) return CaseStepStatus.current;
+  //     return CaseStepStatus.future;
+  //   }
 
-    return [
-      CaseStep(
-        title: 'Case received',
-        subtitle: _fmtDateTime(c.createdAt),
-        status: statusOf(0),
-      ),
-      CaseStep(
-        title: 'Technician assigned',
-        subtitle: c.technicianName ?? 'Pending',
-        status: statusOf(1),
-      ),
-      CaseStep(
-        title: 'Visit scheduled',
-        subtitle: c.scheduledAt != null
-            ? _fmtDateTime(c.scheduledAt)
-            : 'Pending',
-        status: statusOf(2),
-      ),
-      CaseStep(
-        title: 'Job closed',
-        subtitle: closed ? _fmtDateTime(c.closedAt) : 'Pending',
-        status: statusOf(3),
-      ),
-    ];
-  }
+  //   return [
+  //     CaseStep(
+  //       title: 'Case received',
+  //       subtitle: _fmtDateTime(c.createdAt),
+  //       status: statusOf(0),
+  //     ),
+  //     CaseStep(
+  //       title: 'Technician assigned',
+  //       subtitle: c.technicianName ?? 'Pending',
+  //       status: statusOf(1),
+  //     ),
+  //     CaseStep(
+  //       title: 'Visit scheduled',
+  //       subtitle: c.scheduledAt != null
+  //           ? _fmtDateTime(c.scheduledAt)
+  //           : 'Pending',
+  //       status: statusOf(2),
+  //     ),
+  //     CaseStep(
+  //       title: 'Job closed',
+  //       subtitle: closed ? _fmtDateTime(c.closedAt) : 'Pending',
+  //       status: statusOf(3),
+  //     ),
+  //   ];
+  // }
 
   void _openTimeline(ServiceCaseModel c) {
     if (c.id == null) return;

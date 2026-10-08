@@ -540,14 +540,12 @@ class _ExtendedCoverScreenState extends State<ExtendedCoverScreen> {
                                 ? 'Please wait…'
                                 : 'Continue · $currency ${_fmt(totalPrice)} for $durationText',
                             bg: isDisabled
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimary.withOpacity(0.35)
+                                ? Theme.of(context).colorScheme.onPrimary
+                                      .withValues(alpha: 0.35)
                                 : Theme.of(context).colorScheme.onPrimary,
                             textcolor: isDisabled
-                                ? Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryFixed.withOpacity(0.6)
+                                ? Theme.of(context).colorScheme.onPrimaryFixed
+                                      .withValues(alpha: 0.6)
                                 : Theme.of(context).colorScheme.onPrimaryFixed,
                           );
                         },

@@ -9,7 +9,7 @@ import 'package:home_keeps/data/response/status.dart';
 import 'package:home_keeps/views/home/add_appliance_screen.dart';
 import 'package:home_keeps/views/home/appliances_detail_screen.dart';
 import 'package:home_keeps/views/home/extended_cover_screen.dart';
-import 'package:home_keeps/views/home/out_of_cover_screen.dart';
+
 import 'package:home_keeps/widgets/app_skeleton.dart';
 import 'package:home_keeps/widgets/primary_button.dart';
 
@@ -737,110 +737,110 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   // --- MOCK PRODUCT RENDERS ---
-  Widget _buildDishwasherGraphic() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: const Color(0xFFE2E6F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            height: 12.h,
-            padding: EdgeInsets.symmetric(horizontal: 4.w),
-            color: const Color(0xFF384371),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(width: 12.w, height: 3.h, color: Colors.white54),
-                Row(
-                  children: List.generate(
-                    3,
-                    (i) => Container(
-                      width: 2.w,
-                      height: 2.w,
-                      margin: EdgeInsets.only(left: 2.w),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Container(
-            height: 1.5.h,
-            margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-            color: const Color(0xFFD6DCED),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDishwasherGraphic() {
+  //   return Container(
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(8.r),
+  //       border: Border.all(color: const Color(0xFFE2E6F0)),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withOpacity(0.05),
+  //           blurRadius: 6,
+  //           offset: const Offset(0, 3),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Container(
+  //           height: 12.h,
+  //           padding: EdgeInsets.symmetric(horizontal: 4.w),
+  //           color: const Color(0xFF384371),
+  //           child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Container(width: 12.w, height: 3.h, color: Colors.white54),
+  //               Row(
+  //                 children: List.generate(
+  //                   3,
+  //                   (i) => Container(
+  //                     width: 2.w,
+  //                     height: 2.w,
+  //                     margin: EdgeInsets.only(left: 2.w),
+  //                     decoration: const BoxDecoration(
+  //                       color: Colors.white,
+  //                       shape: BoxShape.circle,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         const Spacer(),
+  //         Container(
+  //           height: 1.5.h,
+  //           margin: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+  //           color: const Color(0xFFD6DCED),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildFridgeGraphic() {
-    return Container(
-      width: 28.w,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: const Color(0xFFD6DCED)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 8.h),
-          Container(width: 2.w, height: 8.h, color: const Color(0xFF434C7A)),
-          const Divider(color: Color(0xFFD6DCED), height: 10),
-          Container(width: 2.w, height: 12.h, color: const Color(0xFF434C7A)),
-        ],
-      ),
-    );
-  }
+  // Widget _buildFridgeGraphic() {
+  //   return Container(
+  //     width: 28.w,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(6.r),
+  //       border: Border.all(color: const Color(0xFFD6DCED)),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         SizedBox(height: 8.h),
+  //         Container(width: 2.w, height: 8.h, color: const Color(0xFF434C7A)),
+  //         const Divider(color: Color(0xFFD6DCED), height: 10),
+  //         Container(width: 2.w, height: 12.h, color: const Color(0xFF434C7A)),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildAcGraphic() {
-    return Container(
-      width: 46.w,
-      height: 20.h,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4.r),
-        border: Border.all(color: const Color(0xFFD6DCED)),
-      ),
-      child: Center(
-        child: Container(
-          width: 8.w,
-          height: 3.h,
-          color: const Color(0xFF8E95A5),
-        ),
-      ),
-    );
-  }
+  // Widget _buildAcGraphic() {
+  //   return Container(
+  //     width: 46.w,
+  //     height: 20.h,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(4.r),
+  //       border: Border.all(color: const Color(0xFFD6DCED)),
+  //     ),
+  //     child: Center(
+  //       child: Container(
+  //         width: 8.w,
+  //         height: 3.h,
+  //         color: const Color(0xFF8E95A5),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildTvGraphic() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 44.w,
-          height: 28.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF282E54),
-            borderRadius: BorderRadius.circular(4.r),
-          ),
-        ),
-        Container(width: 12.w, height: 3.h, color: const Color(0xFF8E95A5)),
-      ],
-    );
-  }
+  // Widget _buildTvGraphic() {
+  //   return Column(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: [
+  //       Container(
+  //         width: 44.w,
+  //         height: 28.h,
+  //         decoration: BoxDecoration(
+  //           color: const Color(0xFF282E54),
+  //           borderRadius: BorderRadius.circular(4.r),
+  //         ),
+  //       ),
+  //       Container(width: 12.w, height: 3.h, color: const Color(0xFF8E95A5)),
+  //     ],
+  //   );
+  // }
 }

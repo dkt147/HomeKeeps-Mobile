@@ -428,7 +428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
       ),
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
     );
   }
 }

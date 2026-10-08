@@ -30,7 +30,7 @@ class _ManualEntryScreenState extends State<ManualEntryScreen> {
   final _manufacturerController = TextEditingController();
   final _modelController = TextEditingController();
   final _priceController = TextEditingController();
-  final _storeController = TextEditingController();
+  // final _storeController = TextEditingController();
   final _serialController = TextEditingController();
 
   DateTime? _purchaseDate;

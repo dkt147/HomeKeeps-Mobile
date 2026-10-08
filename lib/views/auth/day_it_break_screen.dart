@@ -115,7 +115,7 @@ class DayItBreaksScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Color(0xff292C47),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +146,7 @@ class GridGraphicPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF2E3B68).withOpacity(0.5)
+      ..color = const Color(0xFF2E3B68).withValues(alpha: 0.5)
       ..strokeWidth = 1.5;
 
     const int numberOfVerticalLines = 8;

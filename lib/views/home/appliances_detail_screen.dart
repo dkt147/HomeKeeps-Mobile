@@ -305,7 +305,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
         },
       ),
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
     );
   }
 
@@ -352,7 +352,9 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               CircleAvatar(
-                                backgroundColor: Colors.white.withOpacity(0.5),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.5,
+                                ),
                                 child: IconButton(
                                   icon: const Icon(
                                     Icons.arrow_back,
@@ -366,8 +368,8 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                                 children: [
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.white.withOpacity(
-                                        0.6,
+                                      backgroundColor: Colors.white.withValues(
+                                        alpha: 0.6,
                                       ),
                                       elevation: 0,
                                       shape: const StadiumBorder(),
@@ -407,8 +409,8 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                                   ),
                                   SizedBox(width: 8.w),
                                   CircleAvatar(
-                                    backgroundColor: Colors.white.withOpacity(
-                                      0.5,
+                                    backgroundColor: Colors.white.withValues(
+                                      alpha: 0.5,
                                     ),
                                     child: IconButton(
                                       icon: Icon(

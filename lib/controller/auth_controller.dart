@@ -10,7 +10,6 @@ import 'package:home_keeps/resources/local_storage_keys.dart';
 import 'package:home_keeps/utils/utils.dart';
 
 import 'package:home_keeps/views/auth/navigator_screen.dart';
-import 'package:home_keeps/views/auth/otp_verification_screen.dart';
 
 class AuthController extends BaseController {
   final AuthRepo authRepo = AuthRepo();
@@ -46,18 +45,34 @@ class AuthController extends BaseController {
 
       if (result["data"] != null) {
         final data = result["data"];
+
+        final String customerId = data["customer_id"] ?? "";
+        final String accessToken = data["access_token"] ?? "";
+        final String refreshToken = data["refresh_token"] ?? "";
         final String otp = data["otp"]?.toString() ?? "";
+
         _testOtp = otp;
 
+        await LocalStorage.saveJson(
+          key: LocalStorageKeys.userId,
+          value: customerId,
+        );
+
+        await LocalStorage.saveAccessToken(accessToken);
+        await LocalStorage.saveRefreshToken(refreshToken);
+
         handleSuccess(
-          data["message"] ?? "OTP sent successfully!",
+          data["message"] ?? "Login successful!",
           showSuccessSnackBar: true,
         );
 
         success = true;
 
         if (navigateOnSuccess) {
-          Get.to(() => OtpVerificationScreen(phoneNumber: phone, testOtp: otp));
+          Get.offAll(
+            () => NavigatorScreen(),
+            transition: Transition.rightToLeft,
+          );
         }
       } else {
         handleError(result["message"] ?? "Failed to send OTP");

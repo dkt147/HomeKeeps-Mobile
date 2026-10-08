@@ -486,7 +486,7 @@ class _ClosingOnSiteScreenState extends State<ClosingOnSiteScreen> {
             child: Icon(
               Icons.grid_on_rounded,
               size: 32.sp,
-              color: Colors.white.withOpacity(0.25),
+              color: Colors.white.withValues(alpha: 0.25),
             ),
           ),
           if (hasWater)
@@ -494,7 +494,7 @@ class _ClosingOnSiteScreenState extends State<ClosingOnSiteScreen> {
               height: 22.h,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFF4370AC).withOpacity(0.8),
+                color: const Color(0xFF4370AC).withValues(alpha: 0.8),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(16.r),
                   bottomRight: Radius.circular(16.r),
@@ -508,7 +508,7 @@ class _ClosingOnSiteScreenState extends State<ClosingOnSiteScreen> {
                 width: 32.w,
                 height: 8.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4370AC).withOpacity(0.5),
+                  color: const Color(0xFF4370AC).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
               ),

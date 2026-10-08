@@ -306,7 +306,7 @@ class _DeletionAccountScreenState extends State<DeletionAccountScreen> {
         },
       ),
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.35),
     );
   }
 }

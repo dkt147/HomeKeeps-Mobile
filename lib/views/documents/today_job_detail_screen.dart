@@ -70,7 +70,7 @@ class TodaysJobDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
@@ -80,7 +80,9 @@ class TodaysJobDetailScreen extends StatelessWidget {
                             child: Icon(
                               Icons.kitchen_outlined,
                               size: 36.sp,
-                              color: const Color(0xFF281E4B).withOpacity(0.3),
+                              color: const Color(
+                                0xFF281E4B,
+                              ).withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -449,14 +451,14 @@ class TodaysJobDetailScreen extends StatelessWidget {
             child: Icon(
               Icons.grid_on_rounded,
               size: 28.sp,
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
             ),
           ),
           Container(
             height: 20.h,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFF4370AC).withOpacity(0.8),
+              color: const Color(0xFF4370AC).withValues(alpha: 0.8),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(12.r),
                 bottomRight: Radius.circular(12.r),

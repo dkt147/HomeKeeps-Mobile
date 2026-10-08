@@ -66,7 +66,7 @@ class ThreeThingsScreen extends StatelessWidget {
                                 Colors.transparent,
                                 const Color(
                                   0xFF282C3F,
-                                ).withOpacity(0.95), // Dark bottom shadow
+                                ).withValues(alpha: 0.95), // Dark bottom shadow
                               ],
                             ),
                           ),
@@ -265,80 +265,80 @@ class ThreeThingsScreen extends StatelessWidget {
   }
 
   // Visual helper widgets for mock graphics
-  Widget _buildMockFridge() {
-    return Container(
-      width: 50,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          Container(width: 3, height: 16, color: const Color(0xFF384371)),
-          const Divider(color: Colors.white30, height: 12),
-          Container(width: 3, height: 24, color: const Color(0xFF384371)),
-        ],
-      ),
-    );
-  }
+  // Widget _buildMockFridge() {
+  //   return Container(
+  //     width: 50,
+  //     height: 100,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white.withOpacity(0.3),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         const SizedBox(height: 12),
+  //         Container(width: 3, height: 16, color: const Color(0xFF384371)),
+  //         const Divider(color: Colors.white30, height: 12),
+  //         Container(width: 3, height: 24, color: const Color(0xFF384371)),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget _buildMockHeater() {
-    return Container(
-      width: 55,
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(
-          4,
-          (index) => Container(
-            width: 3,
-            margin: const EdgeInsets.symmetric(vertical: 12),
-            color: const Color(0xFF384371).withOpacity(0.5),
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildMockHeater() {
+  //   return Container(
+  //     width: 55,
+  //     height: 80,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white.withOpacity(0.3),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //       children: List.generate(
+  //         4,
+  //         (index) => Container(
+  //           width: 3,
+  //           margin: const EdgeInsets.symmetric(vertical: 12),
+  //           color: const Color(0xFF384371).withOpacity(0.5),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildMockOven() {
-    return Container(
-      width: 55,
-      height: 70,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(
-              4,
-              (index) => const CircleAvatar(
-                radius: 2,
-                backgroundColor: Color(0xFF384371),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF131835).withOpacity(0.7),
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildMockOven() {
+  //   return Container(
+  //     width: 55,
+  //     height: 70,
+  //     decoration: BoxDecoration(
+  //       color: Colors.white.withOpacity(0.3),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         const SizedBox(height: 6),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //           children: List.generate(
+  //             4,
+  //             (index) => const CircleAvatar(
+  //               radius: 2,
+  //               backgroundColor: Color(0xFF384371),
+  //             ),
+  //           ),
+  //         ),
+  //         const SizedBox(height: 6),
+  //         Expanded(
+  //           child: Container(
+  //             margin: const EdgeInsets.all(6),
+  //             decoration: BoxDecoration(
+  //               color: const Color(0xFF131835).withOpacity(0.7),
+  //               borderRadius: BorderRadius.circular(6),
+  //             ),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

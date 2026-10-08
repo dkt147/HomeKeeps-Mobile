@@ -184,7 +184,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28.r),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         width: 1.5,
                       ),
                     ),
@@ -219,13 +219,17 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
                                     Icon(
                                       Icons.camera_alt_outlined,
                                       size: 36.sp,
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.5,
+                                      ),
                                     ),
                                     SizedBox(height: 8.h),
                                     Text(
                                       'Camera preview',
                                       style: TextStyle(
-                                        color: Colors.white.withOpacity(0.6),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.6,
+                                        ),
                                         fontSize: 13.sp,
                                       ),
                                     ),
@@ -241,13 +245,13 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
                                 Icon(
                                   Icons.camera_alt_outlined,
                                   size: 36.sp,
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                 ),
                                 SizedBox(height: 8.h),
                                 Text(
                                   'Camera preview',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
+                                    color: Colors.white.withValues(alpha: 0.6),
                                     fontSize: 13.sp,
                                   ),
                                 ),
