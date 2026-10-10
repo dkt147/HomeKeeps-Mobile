@@ -231,6 +231,7 @@ class ProductController extends BaseController {
         handleError('Could not start the case');
         return null;
       }
+      await getProduct();
 
       return result.caseId;
     } catch (e) {

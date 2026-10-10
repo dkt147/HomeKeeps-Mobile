@@ -52,6 +52,15 @@ class NetworkApiService extends GetxService {
   String? _extractErrorMessage(dynamic responseJson) {
     if (responseJson is! Map) return null;
 
+    // New backend format: { "error": { "code", "message", "details" } }
+    final dynamic error = responseJson['error'];
+    if (error is Map) {
+      final msg = error['message']?.toString();
+      if (msg != null && msg.isNotEmpty) return msg;
+    } else if (error is String && error.isNotEmpty) {
+      return error;
+    }
+
     final dynamic detail = responseJson['detail'];
 
     if (detail is List && detail.isNotEmpty) {
@@ -68,9 +77,13 @@ class NetworkApiService extends GetxService {
       return detail;
     }
 
-    return responseJson['message']?.toString() ??
-        responseJson['error']?.toString() ??
-        responseJson['errors']?.toString();
+    final dynamic message = responseJson['message'];
+    if (message is String && message.isNotEmpty) return message;
+
+    final dynamic errors = responseJson['errors'];
+    if (errors is String && errors.isNotEmpty) return errors;
+
+    return null;
   }
 
   dynamic _processResponse(http.Response response) {

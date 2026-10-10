@@ -20,6 +20,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:home_keeps/models/product_detail_model.dart'
+    show DocumentModel, ExtendedWarranty;
 
 class ServiceHistoryItem {
   final String title;
@@ -57,6 +59,12 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       productController.getProductDetail(id: widget.id);
     });
+  }
+
+  bool get _canShowExtendedSection {
+    final history =
+        productController.productDetailModel?.data?.serviceHistory ?? [];
+    return history.every((s) => s.status?.toLowerCase() == 'resolved');
   }
 
   bool _remindMe = true;
@@ -717,6 +725,67 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
 
                       // WARRANTY
                       _sectionKicker('WARRANTY'),
+
+                      _buildCardContainer(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _labelValueRow(
+                              'Status',
+                              productController
+                                      .productDetailModel
+                                      ?.data
+                                      ?.warranty
+                                      ?.status
+                                      ?.capitalizeFirst ??
+                                  '-',
+                            ),
+                            _labelValueRow(
+                              'Start Date',
+                              formatDate(
+                                productController
+                                    .productDetailModel
+                                    ?.data
+                                    ?.warranty
+                                    ?.startDate,
+                              ),
+                            ),
+                            _labelValueRow(
+                              'End Date',
+                              formatDate(
+                                productController
+                                    .productDetailModel
+                                    ?.data
+                                    ?.warranty
+                                    ?.endDate,
+                              ),
+                            ),
+                            _labelValueRow(
+                              'Days Remaining',
+                              productController
+                                      .productDetailModel
+                                      ?.data
+                                      ?.warranty
+                                      ?.daysRemaining
+                                      .toString() ??
+                                  '',
+                            ),
+                            // _labelValueRow('Message', ""),
+                            // Text(
+                            //   productController
+                            //           .productDetailModel
+                            //           ?.data
+                            //           ?.warranty
+                            //           ?.message ??
+                            //       '',
+                            //   style: AppTextStyles.small.copyWith(
+                            //     color: Theme.of(context).colorScheme.primary,
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                      10.verticalSpace,
                       _buildCardContainer(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -742,46 +811,28 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                                 ).colorScheme.onSecondary,
                               ),
                             ),
-                            SizedBox(height: 12.h),
-                            PrimaryButton(
-                              bg: Theme.of(context).scaffoldBackgroundColor,
-                              textcolor: Theme.of(context).colorScheme.primary,
-                              onTap: () {
-                                Get.to(
-                                  () => ExtendedCoverScreen(id: widget.id),
-                                  transition: Transition.rightToLeft,
-                                );
-                                // Get.to(
-                                //   () => ExtendedWarrantyOfferScreen(
-                                //     applianceName: widget.applianceName,
-                                //     headline:
-                                //         'Three more years of repairs, after initial warranty ends',
-                                //     price: '₪690',
-                                //     priceNote: 'once · covers 36 months',
-                                //     covered: const [
-                                //       'Mechanical and electrical breakdown',
-                                //       'Technician call-out, labour and parts',
-                                //       'Unlimited number of visits',
-                                //       "Replacement if it can't be repaired",
-                                //     ],
-                                //     notCovered: const [
-                                //       'Accidental damage, misuse and cosmetic wear',
-                                //       'Faults that already exist today',
-                                //       'Consumables: filters, seals, hoses',
-                                //       'Commercial or business use',
-                                //     ],
-                                //     coverBegins: widget.warrantyEndDate,
-                                //     waitingPeriod: '30 days from purchase',
-                                //     yourSharePerClaim: '₪0',
-                                //     claimLimit: '₪2,790',
-                                //     term: '36 months',
-                                //   ),
-                                //   transition: Transition.rightToLeft,
-                                // );
-                              },
-                              title: 'Extend the protection',
-                              width: 220.w,
-                            ),
+
+                            // SizedBox(height: 12.h),
+                            if (_canShowExtendedSection) ...[
+                              SizedBox(height: 12.h),
+                              if (_extendedWarranty == null)
+                                PrimaryButton(
+                                  bg: Theme.of(context).scaffoldBackgroundColor,
+                                  textcolor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  onTap: () {
+                                    Get.to(
+                                      () => ExtendedCoverScreen(id: widget.id),
+                                      transition: Transition.rightToLeft,
+                                    );
+                                  },
+                                  title: 'Extend the protection',
+                                  width: 220.w,
+                                )
+                              else
+                                _buildExtendedPlanDetails(_extendedWarranty!),
+                            ],
                           ],
                         ),
                       ),
@@ -952,7 +1003,7 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 50.h),
                     ],
                   ),
                 ),
@@ -961,6 +1012,82 @@ class _ApplianceDetailScreenState extends State<ApplianceDetailScreen> {
           );
         },
       ),
+    );
+  }
+
+  ExtendedWarranty? get _extendedWarranty {
+    final list = productController.productDetailModel?.data?.extendedWarranties;
+    if (list == null || list.isEmpty) return null;
+    return list.first;
+  }
+
+  String _money(int? minor) {
+    if (minor == null) return '-';
+    final v = minor / 100;
+    return '₪${v == v.roundToDouble() ? v.toInt() : v.toStringAsFixed(2)}';
+  }
+
+  String _prettify(String? s) {
+    if (s == null || s.isEmpty) return '-';
+    final t = s.replaceAll('_', ' ');
+    return t[0].toUpperCase() + t.substring(1);
+  }
+
+  Widget _buildExtendedPlanDetails(ExtendedWarranty ext) {
+    final plan = ext.planSnapshot;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Extended protection',
+          style: AppTextStyles.semiBold.copyWith(
+            fontSize: 16.sp,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        _labelValueRow('Status', _prettify(ext.status)),
+        _labelValueRow('Price', _money(plan?.price ?? ext.quotedPrice)),
+        _labelValueRow('Duration', '${plan?.durationMonths ?? '-'} months'),
+        _labelValueRow('Your share per claim', _money(plan?.deductible)),
+        _labelValueRow(
+          'Waiting period',
+          '${plan?.waitingPeriodDays ?? 0} days',
+        ),
+        _labelValueRow(
+          'Claims',
+          '${ext.claimsUsed ?? 0} / ${plan?.maxClaims ?? '-'} used',
+        ),
+        if (plan?.exclusions?.isNotEmpty ?? false) ...[
+          SizedBox(height: 8.h),
+          Text(
+            'Not covered',
+            style: AppTextStyles.small.copyWith(
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Wrap(
+            spacing: 6.w,
+            runSpacing: 6.h,
+            children: plan!.exclusions!
+                .map(
+                  (e) => Chip(
+                    label: Text(_prettify(e), style: AppTextStyles.small),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+        // SizedBox(height: 8.h),
+        // Text(
+        //   'Terms v${plan?.termsVersion ?? '-'}',
+        //   style: AppTextStyles.small.copyWith(
+        //     color: Theme.of(context).colorScheme.onSecondary,
+        //   ),
+        // ),
+      ],
     );
   }
 

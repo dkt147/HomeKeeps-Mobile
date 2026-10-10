@@ -365,11 +365,111 @@ class WarrantyReminder {
 }
 
 class ExtendedWarranty {
-  ExtendedWarranty();
+  String? id;
+  String? productId;
+  String? planId;
+  PlanSnapshot? planSnapshot;
+  dynamic pricePaid;
+  int? quotedPrice;
+  String? startDate;
+  String? endDate;
+  String? status;
+  int? claimsUsed;
+  dynamic paymentRef;
+  String? createdAt;
+  String? updatedAt;
 
-  ExtendedWarranty.fromJson(Map<String, dynamic> json);
+  ExtendedWarranty({
+    this.id,
+    this.productId,
+    this.planId,
+    this.planSnapshot,
+    this.pricePaid,
+    this.quotedPrice,
+    this.startDate,
+    this.endDate,
+    this.status,
+    this.claimsUsed,
+    this.paymentRef,
+    this.createdAt,
+    this.updatedAt,
+  });
 
-  Map<String, dynamic> toJson() => {};
+  ExtendedWarranty.fromJson(Map<String, dynamic> json) {
+    id = json['_id'];
+    productId = json['product_id'];
+    planId = json['plan_id'];
+    planSnapshot = json['plan_snapshot'] != null
+        ? PlanSnapshot.fromJson(json['plan_snapshot'])
+        : null;
+    pricePaid = json['price_paid'];
+    quotedPrice = json['quoted_price'];
+    startDate = json['start_date'];
+    endDate = json['end_date'];
+    status = json['status'];
+    claimsUsed = json['claims_used'];
+    paymentRef = json['payment_ref'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    '_id': id,
+    'product_id': productId,
+    'plan_id': planId,
+    'plan_snapshot': planSnapshot?.toJson(),
+    'price_paid': pricePaid,
+    'quoted_price': quotedPrice,
+    'start_date': startDate,
+    'end_date': endDate,
+    'status': status,
+    'claims_used': claimsUsed,
+    'payment_ref': paymentRef,
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+  };
+}
+
+class PlanSnapshot {
+  int? price;
+  int? durationMonths;
+  int? deductible;
+  int? waitingPeriodDays;
+  int? maxClaims;
+  List<String>? exclusions;
+  String? termsVersion;
+
+  PlanSnapshot({
+    this.price,
+    this.durationMonths,
+    this.deductible,
+    this.waitingPeriodDays,
+    this.maxClaims,
+    this.exclusions,
+    this.termsVersion,
+  });
+
+  PlanSnapshot.fromJson(Map<String, dynamic> json) {
+    price = json['price'];
+    durationMonths = json['duration_months'];
+    deductible = json['deductible'];
+    waitingPeriodDays = json['waiting_period_days'];
+    maxClaims = json['max_claims'];
+    exclusions = (json['exclusions'] as List?)
+        ?.map((e) => e.toString())
+        .toList();
+    termsVersion = json['terms_version'];
+  }
+
+  Map<String, dynamic> toJson() => {
+    'price': price,
+    'duration_months': durationMonths,
+    'deductible': deductible,
+    'waiting_period_days': waitingPeriodDays,
+    'max_claims': maxClaims,
+    'exclusions': exclusions,
+    'terms_version': termsVersion,
+  };
 }
 
 class DocumentModel {
